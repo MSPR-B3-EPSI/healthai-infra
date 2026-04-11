@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+
+*.log
+.DS_Store
+
+# Local build artifacts
+.tmp/

@@ -1,0 +1,60 @@
+services:
+  postgres_api:
+    image: postgres:16
+    profiles: ["data"]
+    environment:
+      POSTGRES_DB: ${API_POSTGRES_DB:-api}
+      POSTGRES_USER: ${API_POSTGRES_USER:-api}
+      POSTGRES_PASSWORD: ${API_POSTGRES_PASSWORD:-change-me}
+    volumes:
+      - pgdata_api:/var/lib/postgresql/data
+    networks:
+      - app
+
+  postgres_tracking:
+    image: postgres:16
+    profiles: ["data"]
+    environment:
+      POSTGRES_DB: ${TRACKING_POSTGRES_DB:-tracking}
+      POSTGRES_USER: ${TRACKING_POSTGRES_USER:-tracking}
+      POSTGRES_PASSWORD: ${TRACKING_POSTGRES_PASSWORD:-change-me}
+    volumes:
+      - pgdata_tracking:/var/lib/postgresql/data
+    networks:
+      - app
+
+  postgres_data:
+    image: postgres:16
+    profiles: ["data"]
+    environment:
+      POSTGRES_DB: ${DATA_POSTGRES_DB:-data}
+      POSTGRES_USER: ${DATA_POSTGRES_USER:-data}
+      POSTGRES_PASSWORD: ${DATA_POSTGRES_PASSWORD:-change-me}
+    volumes:
+      - pgdata_data:/var/lib/postgresql/data
+    networks:
+      - app
+
+  # minio:
+  #   image: minio/minio:RELEASE.2025-01-20T14-49-07Z
+  #   profiles: ["data"]
+  #   command: server /data --console-address ":9001"
+  #   environment:
+  #     MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minio}
+  #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-change-me-minio}
+  #   ports:
+  #     - "${MINIO_PORT:-9000}:9000"
+  #     - "${MINIO_CONSOLE_PORT:-9001}:9001"
+  #   volumes:
+  #     - minio_data:/data
+  #   networks:
+  #     - app
+
+networks:
+  app:
+
+volumes:
+  pgdata_api:
+  pgdata_tracking:
+  pgdata_data:
+  minio_data:

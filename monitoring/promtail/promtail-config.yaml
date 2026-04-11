@@ -1,0 +1,37 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /run/promtail/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      - source_labels:
+          [__meta_docker_container_label_com_docker_compose_service]
+        # Keep app and infra workloads; exclude monitoring self-logs to avoid recursive log amplification.
+        regex: "nginx|keycloak|postgres_keycloak|mspr_api|mspr_tracking|mspr_data|postgres_api|postgres_tracking|postgres_data|minio|postgres_airflow|airflow-init|airflow-webserver|airflow-scheduler"
+        action: keep
+      - source_labels:
+          [__meta_docker_container_label_com_docker_compose_project]
+        target_label: compose_project
+      - source_labels:
+          [__meta_docker_container_label_com_docker_compose_service]
+        target_label: compose_service
+      - source_labels: [__meta_docker_container_name]
+        regex: "/(.*)"
+        target_label: container
+      - source_labels: [__meta_docker_container_id]
+        target_label: container_id
+      - source_labels: [__meta_docker_container_id]
+        target_label: __path__
+        replacement: /var/lib/docker/containers/$1/$1-json.log
+    pipeline_stages:
+      - docker: {}

@@ -1,0 +1,57 @@
+services:
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    profiles: ["monitoring"]
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - app
+
+  loki:
+    image: grafana/loki:3.2.1
+    profiles: ["monitoring"]
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "${LOKI_PORT:-3100}:3100"
+    volumes:
+      - ../monitoring/loki/loki-config.yaml:/etc/loki/local-config.yaml:ro
+    networks:
+      - app
+
+  grafana:
+    image: grafana/grafana:11.2.2
+    profiles: ["monitoring"]
+    ports:
+      - "${GRAFANA_PORT:-3001}:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - app
+
+  promtail:
+    image: grafana/promtail:3.2.1
+    profiles: ["monitoring"]
+    user: "0:0"
+    command: -config.file=/etc/promtail/config.yml
+    volumes:
+      - ../monitoring/promtail/promtail-config.yaml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - promtail_positions:/run/promtail
+    depends_on:
+      - loki
+    networks:
+      - app
+
+networks:
+  app:
+
+volumes:
+  grafana_data:
+  promtail_positions:

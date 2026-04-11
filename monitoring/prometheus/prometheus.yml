@@ -1,0 +1,23 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["prometheus:9090"]
+
+  - job_name: mspr_api
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["mspr_api:3000"]
+
+  - job_name: mspr_tracking
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["mspr_tracking:3000"]
+
+  - job_name: mspr_data
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["mspr_data:3000"]
