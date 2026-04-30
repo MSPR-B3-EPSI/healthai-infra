@@ -28,7 +28,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
     profiles: ["core"]
-    command: ["start-dev"]
+    command: ["start-dev", "--import-realm"] # Added import-realm if you want to use that JSON automatically
     environment:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres_keycloak:5432/${KC_POSTGRES_DB:-keycloak}
@@ -36,8 +36,16 @@ services:
       KC_DB_PASSWORD: ${KC_POSTGRES_PASSWORD:-change-me}
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
-      KC_PROXY: edge
+
+      KC_PROXY_HEADERS: xforwarded # Ensures Keycloak respects X-Forwarded-* headers from Nginx
+      KC_HTTP_RELATIVE_PATH: /auth # Essential for /auth prefix
       KC_HTTP_ENABLED: "true"
+
+      KC_HOSTNAME_PATH: /auth
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 8080
+      KC_HOSTNAME_STRICT: "false"
+
     depends_on:
       - postgres_keycloak
     expose:

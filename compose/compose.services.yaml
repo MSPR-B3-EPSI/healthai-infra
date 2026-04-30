@@ -1,51 +1,83 @@
 services:
-  mspr_api:
-    image: ${MSPR_API_IMAGE:-ghcr.io/your-org/mspr-api:latest}
+  healthbook-api:
+    image: node:22-bookworm-slim
     profiles: ["services"]
+    working_dir: /workspace
+    command:
+      - sh
+      - -lc
+      - ${MSPR_API_DEV_COMMAND:-if [ ! -d node_modules/.bin ]; then npm install; fi && npx prisma generate && npm run start:dev}
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: "3000"
-      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER_INTERNAL:-http://keycloak:8080/realms/mspr}
-      KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE_API:-mspr-api}
+      HOST: 0.0.0.0
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER_INTERNAL:-http://keycloak:8080/realms/healthai}
+      KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE_API:-healthbook-api}
       DATABASE_URL: ${API_DATABASE_URL:-postgresql://api:change-me@postgres_api:5432/api}
-    expose:
-      - "3000"
+    volumes:
+      - ${MSPR_API_SOURCE_DIR:-../../healthbook-api}:/workspace
+      - ${MSPR_API_SOURCE_DIR:-../../healthbook-api}/node_modules:/workspace/node_modules
     depends_on:
       - postgres_api
       - keycloak
     networks:
       - app
 
-  mspr_tracking:
-    image: ${MSPR_TRACKING_IMAGE:-ghcr.io/your-org/mspr-tracking:latest}
+  tracking-api:
+    image: node:22-bookworm-slim
     profiles: ["services"]
+    working_dir: /workspace
+    command:
+      - sh
+      - -lc
+      - ${MSPR_TRACKING_DEV_COMMAND:-if [ ! -d node_modules/.bin ]; then npm install; fi && npx prisma generate && npm run start:dev}
     environment:
       NODE_ENV: ${NODE_ENV:-development}
-      PORT: "3000"
-      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER_INTERNAL:-http://keycloak:8080/realms/mspr}
-      KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE_TRACKING:-mspr-tracking}
+      PORT: "3001"
+      HOST: 0.0.0.0
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER_INTERNAL:-http://keycloak:8080/realms/healthai}
+      KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE_TRACKING:-tracking-api}
       DATABASE_URL: ${TRACKING_DATABASE_URL:-postgresql://tracking:change-me@postgres_tracking:5432/tracking}
-    expose:
-      - "3000"
+    volumes:
+      - ${MSPR_TRACKING_SOURCE_DIR:-../../tracking-api}:/workspace
+      - ${MSPR_TRACKING_SOURCE_DIR:-../../tracking-api}/node_modules:/workspace/node_modules
     depends_on:
       - postgres_tracking
       - keycloak
     networks:
       - app
 
-  mspr_data:
-    image: ${MSPR_DATA_IMAGE:-ghcr.io/your-org/mspr-data:latest}
+  data-recommendation-api:
+    image: node:22-bookworm-slim
     profiles: ["services"]
+    working_dir: /workspace
+    command:
+      - sh
+      - -lc
+      - ${MSPR_DATA_DEV_COMMAND:-if [ ! -d node_modules/.bin ]; then npm install; fi && npx prisma generate && npm run start:dev}
     environment:
       NODE_ENV: ${NODE_ENV:-development}
-      PORT: "3000"
-      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER_INTERNAL:-http://keycloak:8080/realms/mspr}
-      KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE_DATA:-mspr-data}
+      PORT: "3002"
+      HOST: 0.0.0.0
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER_INTERNAL:-http://keycloak:8080/realms/healthai}
+      KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE_DATA:-data-recommendation-api}
       DATABASE_URL: ${DATA_DATABASE_URL:-postgresql://data:change-me@postgres_data:5432/data}
-    expose:
-      - "3000"
+    volumes:
+      - ${MSPR_DATA_SOURCE_DIR:-../../data-recommendation-api}:/workspace
+      - ${MSPR_DATA_SOURCE_DIR:-../../data-recommendation-api}/node_modules:/workspace/node_modules
     depends_on:
       - postgres_data
       - keycloak
     networks:
       - app
+
+networks:
+  app:
+
+volumes: {}

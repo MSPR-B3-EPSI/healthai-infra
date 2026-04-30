@@ -17,7 +17,7 @@ If you changed values in `.env`, replace the port numbers accordingly.
 ## External URLs (From Host Browser)
 
 - Gateway root: http://localhost:8080
-- Gateway health: http://localhost:8080/health
+- Gateway health: http://localhost:8080/api
 - Keycloak entrypoint (through gateway): http://localhost:8080/auth/
 - Keycloak admin console: http://localhost:8080/auth/admin/master/console/
 
@@ -30,9 +30,6 @@ If you changed values in `.env`, replace the port numbers accordingly.
 - Prometheus UI: http://localhost:9090
 - Loki HTTP API base: http://localhost:3100
 
-- MinIO API (optional): http://localhost:9000
-- MinIO Console (optional): http://localhost:9001
-
 ## Internal URLs (Container-to-Container)
 
 Use these only from services running on the same Compose network.
@@ -40,9 +37,9 @@ Use these only from services running on the same Compose network.
 - Keycloak realm issuer: http://keycloak:8080/realms/mspr
 - Keycloak base: http://keycloak:8080/
 
-- MSPR API service: http://mspr_api:3000/
-- MSPR Tracking service: http://mspr_tracking:3000/
-- MSPR Data service: http://mspr_data:3000/
+- HealthBook API service: http://healthbook-api:3000/
+- Tracking API service: http://tracking-api:3000/
+- Data Recommendation API service: http://data-recommendation-api:3000/
 
 - Postgres Keycloak: postgres_keycloak:5432
 - Postgres API: postgres_api:5432
@@ -57,7 +54,7 @@ Use these only from services running on the same Compose network.
 ## Profile Availability
 
 - `core`: gateway, keycloak, postgres_keycloak
-- `services`: mspr_api, mspr_tracking, mspr_data
+- `services`: healthbook-api, tracking-api, data-recommendation-api
 - `data`: postgres_api, postgres_tracking, postgres_data, minio
 - `airflow`: airflow-webserver, airflow-scheduler, airflow-init, postgres_airflow
 - `monitoring`: grafana, prometheus, loki, promtail

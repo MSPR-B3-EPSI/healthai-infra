@@ -39,7 +39,7 @@ docker compose \
 Fix:
 
 - Start missing profiles.
-- Check logs for mspr_api, mspr_tracking, or mspr_data.
+- Check logs for healthbook-api, tracking-api, or data-recommendation-api.
 
 ## 3) Services fail at startup with DB connection errors
 

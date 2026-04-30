@@ -8,17 +8,17 @@ fi
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PROJECT_NAME="${COMPOSE_PROJECT_NAME:-healthai}"
+
 COMPOSE_FILES=(
-  -f compose/compose.core.yaml
-  -f compose/compose.services.yaml
-  -f compose/compose.data.yaml
-  -f compose/compose.airflow.yaml
-  -f compose/compose.monitoring.yaml
+  -f "${REPO_ROOT}/compose/compose.core.yaml"
+  -f "${REPO_ROOT}/compose/compose.services.yaml"
+  -f "${REPO_ROOT}/compose/compose.data.yaml"
+  -f "${REPO_ROOT}/compose/compose.airflow.yaml"
+  -f "${REPO_ROOT}/compose/compose.monitoring.yaml"
 )
-
-DEV_COMPOSE_FILE=compose/compose.services.dev.yaml
-
-WITH_IMAGE_SERVICES=false
 
 read_env_var() {
   local key="$1"
@@ -29,8 +29,8 @@ read_env_var() {
     return 0
   fi
 
-  if [[ -f .env ]]; then
-    value="$(grep -E "^${key}=" .env | tail -n1 || true)"
+  if [[ -f "${REPO_ROOT}/.env" ]]; then
+    value="$(grep -E "^${key}=" "${REPO_ROOT}/.env" | tail -n1 || true)"
     if [[ -n "$value" ]]; then
       value="${value#*=}"
       value="${value%\"}"
@@ -48,14 +48,14 @@ read_env_var() {
 resolve_source_dir() {
   local service="$1"
   case "$service" in
-    mspr_api)
-      read_env_var MSPR_API_SOURCE_DIR || echo "../mspr-api"
+    healthbook-api)
+      read_env_var MSPR_API_SOURCE_DIR || echo "${REPO_ROOT}/../healthbook-api"
       ;;
-    mspr_tracking)
-      read_env_var MSPR_TRACKING_SOURCE_DIR || echo "../mspr-tracking"
+    tracking-api)
+      read_env_var MSPR_TRACKING_SOURCE_DIR || echo "${REPO_ROOT}/../tracking-api"
       ;;
-    mspr_data)
-      read_env_var MSPR_DATA_SOURCE_DIR || echo "../mspr-data"
+    data-recommendation-api)
+      read_env_var MSPR_DATA_SOURCE_DIR || echo "${REPO_ROOT}/../data-recommendation-api"
       ;;
     *)
       return 1
@@ -64,20 +64,17 @@ resolve_source_dir() {
 }
 
 if [[ $# -eq 0 ]]; then
-  TARGETS=(mspr_api mspr_tracking mspr_data)
+  TARGETS=(healthbook-api tracking-api data-recommendation-api)
 else
   TARGETS=()
   for target in "$@"; do
     case "$target" in
-      --with-images)
-        WITH_IMAGE_SERVICES=true
-        ;;
-      mspr_api|mspr_tracking|mspr_data)
+      healthbook-api|tracking-api|data-recommendation-api)
         TARGETS+=("$target")
         ;;
       *)
         echo "Unknown service: $target" >&2
-        echo "Allowed values: mspr_api, mspr_tracking, mspr_data, --with-images" >&2
+        echo "Allowed values: healthbook-api, tracking-api, data-recommendation-api" >&2
         exit 1
         ;;
     esac
@@ -86,7 +83,7 @@ fi
 
 if [[ ${#TARGETS[@]} -eq 0 ]]; then
   echo "No dev services selected." >&2
-  echo "Use: ./scripts/dev.sh [--with-images] mspr_api [mspr_tracking] [mspr_data]" >&2
+  echo "Use: ./scripts/dev.sh healthbook-api [tracking-api] [data-recommendation-api]" >&2
   exit 1
 fi
 
@@ -100,26 +97,5 @@ for target in "${TARGETS[@]}"; do
 done
 
 # Start infrastructure profiles without requiring service images.
-docker compose "${COMPOSE_FILES[@]}" --profile core --profile data --profile monitoring --profile airflow up -d
-
-if [[ "$WITH_IMAGE_SERVICES" == "true" ]]; then
-  IMAGE_SERVICES=()
-  for service in mspr_api mspr_tracking mspr_data; do
-    keep_image=true
-    for target in "${TARGETS[@]}"; do
-      if [[ "$service" == "$target" ]]; then
-        keep_image=false
-        break
-      fi
-    done
-    if [[ "$keep_image" == "true" ]]; then
-      IMAGE_SERVICES+=("$service")
-    fi
-  done
-
-  if [[ ${#IMAGE_SERVICES[@]} -gt 0 ]]; then
-    docker compose "${COMPOSE_FILES[@]}" --profile services up -d "${IMAGE_SERVICES[@]}"
-  fi
-fi
-
-docker compose "${COMPOSE_FILES[@]}" -f "$DEV_COMPOSE_FILE" --profile services up -d "${TARGETS[@]}"
+docker compose --project-name "${PROJECT_NAME}" "${COMPOSE_FILES[@]}" --profile core --profile data --profile monitoring --profile airflow up -d
+docker compose --project-name "${PROJECT_NAME}" "${COMPOSE_FILES[@]}" --profile core --profile data --profile services up -d "${TARGETS[@]}"

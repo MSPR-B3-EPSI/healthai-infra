@@ -9,9 +9,9 @@ The stack is organized into compose profile groups:
   - keycloak
   - postgres_keycloak
 - services
-  - mspr_api
-  - mspr_tracking
-  - mspr_data
+  - healthbook-api
+  - tracking-api
+  - data-recommendation-api
 - data
   - postgres_api
   - postgres_tracking
@@ -37,9 +37,9 @@ NGINX is the single entrypoint for HTTP traffic.
 Routing rules:
 
 - /auth/ -> keycloak:8080/
-- /api/ -> mspr_api:3000
-- /tracking/ -> mspr_tracking:3000
-- /data/ -> mspr_data:3000
+- /api/ -> healthbook-api:3000
+- /tracking/ -> tracking-api:3000
+- /data/ -> data-recommendation-api:3000
 
 Path prefixes are stripped before forwarding to backend services.
 Example: /api/v1/patients is forwarded as /v1/patients.
@@ -66,9 +66,9 @@ In this repository, issuer is typically:
 
 Each API service has an isolated Postgres database:
 
-- mspr_api -> postgres_api
-- mspr_tracking -> postgres_tracking
-- mspr_data -> postgres_data
+- healthbook-api -> postgres_api
+- tracking-api -> postgres_tracking
+- data-recommendation-api -> postgres_data
 
 Additional databases:
 

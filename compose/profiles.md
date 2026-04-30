@@ -57,13 +57,7 @@ docker compose \
 ## Full stack plus hot reload
 
 ```bash
-./scripts/dev.sh mspr_api
+./scripts/dev.sh healthbook-api
 ```
 
 This starts infra profiles (core, data, monitoring, airflow), then starts selected services with local source mounts and watch mode.
-
-To keep non-selected services on image tags while one service is hot-reloaded:
-
-```bash
-./scripts/dev.sh --with-images mspr_api
-```

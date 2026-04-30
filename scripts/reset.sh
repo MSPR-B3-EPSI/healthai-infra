@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PROJECT_NAME="${COMPOSE_PROJECT_NAME:-healthai}"
+
+PROFILES=(core services data monitoring airflow)
+PROFILE_ARGS=()
+for profile in "${PROFILES[@]}"; do
+  PROFILE_ARGS+=(--profile "$profile")
+done
+
 if [[ "${1:-}" != "--yes" ]]; then
   echo "WARNING: This will remove containers and ALL named volumes for this stack."
   echo "Run again with: ./scripts/reset.sh --yes"
@@ -8,9 +18,11 @@ if [[ "${1:-}" != "--yes" ]]; then
 fi
 
 docker compose \
-  -f compose/compose.core.yaml \
-  -f compose/compose.services.yaml \
-  -f compose/compose.data.yaml \
-  -f compose/compose.airflow.yaml \
-  -f compose/compose.monitoring.yaml \
+  --project-name "${PROJECT_NAME}" \
+  -f "${REPO_ROOT}/compose/compose.core.yaml" \
+  -f "${REPO_ROOT}/compose/compose.services.yaml" \
+  -f "${REPO_ROOT}/compose/compose.data.yaml" \
+  -f "${REPO_ROOT}/compose/compose.airflow.yaml" \
+  -f "${REPO_ROOT}/compose/compose.monitoring.yaml" \
+  "${PROFILE_ARGS[@]}" \
   down -v

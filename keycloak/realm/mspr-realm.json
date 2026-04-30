@@ -1,220 +1,35 @@
 {
-  "realm": "mspr",
-  "enabled": true,
-  "displayName": "MSPR Realm",
-  "registrationAllowed": false,
-  "registrationEmailAsUsername": false,
-  "rememberMe": true,
-  "verifyEmail": true,
-  "loginWithEmailAllowed": true,
-  "duplicateEmailsAllowed": false,
-  "resetPasswordAllowed": true,
-  "editUsernameAllowed": false,
-  "bruteForceProtected": true,
-  "permanentLockout": false,
-  "maxFailureWaitSeconds": 900,
-  "minimumQuickLoginWaitSeconds": 60,
-  "waitIncrementSeconds": 60,
-  "quickLoginCheckMilliSeconds": 1000,
-  "maxDeltaTimeSeconds": 43200,
-  "failureFactor": 5,
-  "offlineSessionIdleTimeout": 2592000,
-  "offlineSessionMaxLifespanEnabled": true,
-  "offlineSessionMaxLifespan": 5184000,
-  "accessTokenLifespan": 300,
-  "accessTokenLifespanForImplicitFlow": 900,
-  "ssoSessionIdleTimeout": 1800,
-  "ssoSessionMaxLifespan": 36000,
-  "ssoSessionIdleTimeoutRememberMe": 43200,
-  "ssoSessionMaxLifespanRememberMe": 604800,
-  "clientSessionIdleTimeout": 0,
-  "clientSessionMaxLifespan": 0,
-  "revokeRefreshToken": true,
-  "refreshTokenMaxReuse": 0,
-  "sslRequired": "none",
-  "defaultSignatureAlgorithm": "RS256",
-  "passwordPolicy": "length(12) and digits(1) and lowerCase(1) and upperCase(1) and specialChars(1) and notUsername(undefined) and forceExpiredPasswordChange(180)",
+  "realm": "healthai",
   "roles": {
     "realm": [
-      {
-        "name": "infra-admin",
-        "description": "Realm administration role for MSPR infrastructure"
-      },
-      {
-        "name": "healthai-user",
-        "description": "Default user role for HealthAI applications"
-      },
-      {
-        "name": "service-observer",
-        "description": "Read-only role for service observability access"
-      }
+      { "name": "plan-freemium" },
+      { "name": "plan-premium" },
+      { "name": "plan-premium+" }
     ]
   },
   "clientScopes": [
     {
-      "name": "aud-mspr-api",
-      "description": "Adds mspr-api audience",
+      "name": "api-all-access",
       "protocol": "openid-connect",
-      "attributes": {
-        "display.on.consent.screen": "false",
-        "include.in.token.scope": "false"
-      },
       "protocolMappers": [
         {
-          "name": "aud-mspr-api",
+          "name": "multi-audience-mapper",
           "protocol": "openid-connect",
-          "protocolMapper": "oidc-audience-mapper",
-          "consentRequired": false,
+          "protocolMapper": "oidc-hardcoded-claim-mapper",
           "config": {
-            "included.client.audience": "mspr-api",
-            "id.token.claim": "false",
-            "access.token.claim": "true"
-          }
-        }
-      ]
-    },
-    {
-      "name": "aud-mspr-tracking",
-      "description": "Adds mspr-tracking audience",
-      "protocol": "openid-connect",
-      "attributes": {
-        "display.on.consent.screen": "false",
-        "include.in.token.scope": "false"
-      },
-      "protocolMappers": [
-        {
-          "name": "aud-mspr-tracking",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-audience-mapper",
-          "consentRequired": false,
-          "config": {
-            "included.client.audience": "mspr-tracking",
-            "id.token.claim": "false",
-            "access.token.claim": "true"
-          }
-        }
-      ]
-    },
-    {
-      "name": "aud-mspr-data",
-      "description": "Adds mspr-data audience",
-      "protocol": "openid-connect",
-      "attributes": {
-        "display.on.consent.screen": "false",
-        "include.in.token.scope": "false"
-      },
-      "protocolMappers": [
-        {
-          "name": "aud-mspr-data",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-audience-mapper",
-          "consentRequired": false,
-          "config": {
-            "included.client.audience": "mspr-data",
-            "id.token.claim": "false",
+            "claim.name": "aud",
+            "claim.value": "healthbook-api, tracking-api, data-recommendation-api",
             "access.token.claim": "true"
           }
         }
       ]
     }
   ],
-  "clients": [
-    {
-      "clientId": "mspr-api",
-      "name": "MSPR API",
-      "enabled": true,
-      "protocol": "openid-connect",
-      "bearerOnly": true,
-      "standardFlowEnabled": false,
-      "directAccessGrantsEnabled": false,
-      "serviceAccountsEnabled": false,
-      "publicClient": false,
-      "fullScopeAllowed": false,
-      "attributes": {
-        "oauth2.device.authorization.grant.enabled": "false"
-      }
-    },
-    {
-      "clientId": "mspr-tracking",
-      "name": "MSPR Tracking API",
-      "enabled": true,
-      "protocol": "openid-connect",
-      "bearerOnly": true,
-      "standardFlowEnabled": false,
-      "directAccessGrantsEnabled": false,
-      "serviceAccountsEnabled": false,
-      "publicClient": false,
-      "fullScopeAllowed": false,
-      "attributes": {
-        "oauth2.device.authorization.grant.enabled": "false"
-      }
-    },
-    {
-      "clientId": "mspr-data",
-      "name": "MSPR Data API",
-      "enabled": true,
-      "protocol": "openid-connect",
-      "bearerOnly": true,
-      "standardFlowEnabled": false,
-      "directAccessGrantsEnabled": false,
-      "serviceAccountsEnabled": false,
-      "publicClient": false,
-      "fullScopeAllowed": false,
-      "attributes": {
-        "oauth2.device.authorization.grant.enabled": "false"
-      }
-    },
-    {
-      "clientId": "mspr-dev-cli",
-      "name": "MSPR Dev CLI",
-      "enabled": true,
-      "protocol": "openid-connect",
-      "publicClient": false,
-      "secret": "CHANGE_ME_IN_REALM_IMPORT",
-      "standardFlowEnabled": false,
-      "directAccessGrantsEnabled": true,
-      "serviceAccountsEnabled": true,
-      "implicitFlowEnabled": false,
-      "fullScopeAllowed": false,
-      "defaultClientScopes": [
-        "web-origins",
-        "acr",
-        "profile",
-        "roles",
-        "email"
-      ],
-      "optionalClientScopes": [
-        "address",
-        "phone",
-        "offline_access",
-        "microprofile-jwt",
-        "aud-mspr-api",
-        "aud-mspr-tracking",
-        "aud-mspr-data"
-      ],
-      "attributes": {
-        "access.token.lifespan": "300",
-        "client_credentials.use_refresh_token": "false"
-      }
-    }
-  ],
-  "users": [],
-  "groups": [],
   "defaultDefaultClientScopes": [
     "role_list",
     "profile",
     "email",
     "roles",
-    "web-origins",
-    "acr"
-  ],
-  "defaultOptionalClientScopes": [
-    "address",
-    "phone",
-    "offline_access",
-    "microprofile-jwt",
-    "aud-mspr-api",
-    "aud-mspr-tracking",
-    "aud-mspr-data"
+    "api-all-access"
   ]
 }

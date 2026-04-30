@@ -8,17 +8,16 @@ The gateway entrypoint is NGINX on port 8080 by default.
 Main paths:
 
 - /auth/\* -> Keycloak
-- /api/\* -> MSPR API service
-- /tracking/\* -> MSPR Tracking service
-- /data/\* -> MSPR Data service
+- /api/\* -> HealthBook API service
+- /tracking/\* -> Tracking API service
+- /data/\* -> Data Recommendation API service
 
 Important: NGINX does not validate JWTs. Each service must validate Keycloak tokens.
 
 ## Prerequisites
 
 - Docker Engine or Docker Desktop with Docker Compose plugin
-- Network access to pull images
-- GHCR credentials if service images are private
+- Network access to pull base images (Keycloak, Postgres, Node)
 
 ## Initial Setup
 
@@ -30,18 +29,8 @@ cp .env.example .env
 
 2. Update required values in .env:
 
-- ORG_NAME
-- MSPR_API_IMAGE
-- MSPR_TRACKING_IMAGE
-- MSPR_DATA_IMAGE
-- MSPR_API_SOURCE_DIR, MSPR_TRACKING_SOURCE_DIR, MSPR_DATA_SOURCE_DIR if you want hot reload from local checkouts
+- MSPR_API_SOURCE_DIR, MSPR_TRACKING_SOURCE_DIR, MSPR_DATA_SOURCE_DIR (local service checkouts)
 - Optional password and port overrides
-
-3. If images are private, login to GHCR:
-
-```bash
-docker login ghcr.io
-```
 
 ## Start Commands
 
@@ -64,22 +53,16 @@ By default this starts profiles:
 When you have the service source code locally, start infra and run selected services in dev mode:
 
 ```bash
-./scripts/dev.sh mspr_api
+./scripts/dev.sh healthbook-api
 ```
 
 You can pass multiple services:
 
 ```bash
-./scripts/dev.sh mspr_api mspr_tracking
+./scripts/dev.sh healthbook-api tracking-api
 ```
 
 This uses bind mounts from `MSPR_*_SOURCE_DIR` and runs the service watch command from `MSPR_*_DEV_COMMAND`.
-
-If you also want non-selected services to run from image tags:
-
-```bash
-./scripts/dev.sh --with-images mspr_api
-```
 
 ### Minimal app stack
 

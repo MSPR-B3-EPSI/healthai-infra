@@ -98,13 +98,6 @@ Reset stack and delete all named volumes (destructive):
 
 ## Environment Variable Reference
 
-### Image and namespace
-
-- ORG_NAME
-- MSPR_API_IMAGE
-- MSPR_TRACKING_IMAGE
-- MSPR_DATA_IMAGE
-
 ### Public ports
 
 - GATEWAY_PORT
@@ -168,7 +161,7 @@ Reset stack and delete all named volumes (destructive):
 ## Recommended Daily Workflow
 
 1. Pull latest repository changes.
-2. Verify .env still has correct image tags.
+2. Verify .env has correct source paths and dev commands.
 3. Start required profiles only.
 4. Validate gateway /health and /auth.
 5. Run feature-specific tests.
@@ -179,21 +172,3 @@ Reset stack and delete all named volumes (destructive):
 - Credentials in .env.example are development defaults.
 - Never commit real secrets to git.
 - Replace default passwords in shared environments.
-
-## Updating Service Images
-
-Change tag values in .env:
-
-- MSPR_API_IMAGE
-- MSPR_TRACKING_IMAGE
-- MSPR_DATA_IMAGE
-
-Then recreate affected containers:
-
-```bash
-docker compose \
-  -f compose/compose.core.yaml \
-  -f compose/compose.services.yaml \
-  -f compose/compose.data.yaml \
-  --profile core --profile services --profile data up -d --force-recreate
-```
