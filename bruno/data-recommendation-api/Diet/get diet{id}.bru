@@ -1,0 +1,11 @@
+meta {
+  name: get /diet/{id}
+  type: http
+  seq: 19
+}
+
+get {
+  url: {{data_api_url}}/diet/:id
+  body: none
+  auth: inherit
+}

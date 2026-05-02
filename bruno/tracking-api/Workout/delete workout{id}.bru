@@ -1,0 +1,11 @@
+meta {
+  name: delete /workout/{id}
+  type: http
+  seq: 11
+}
+
+delete {
+  url: {{tracking_api_url}}/workout/:id
+  body: none
+  auth: inherit
+}

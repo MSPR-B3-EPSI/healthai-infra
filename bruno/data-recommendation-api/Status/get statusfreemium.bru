@@ -1,0 +1,11 @@
+meta {
+  name: get /status/freemium
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{data_api_url}}/status/freemium
+  body: none
+  auth: inherit
+}

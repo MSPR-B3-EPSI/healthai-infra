@@ -1,0 +1,11 @@
+meta {
+  name: get /status/whoami
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{data_api_url}}/status/whoami
+  body: none
+  auth: inherit
+}

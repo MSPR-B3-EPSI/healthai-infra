@@ -1,0 +1,11 @@
+meta {
+  name: delete /exercise/{id}
+  type: http
+  seq: 11
+}
+
+delete {
+  url: {{data_api_url}}/exercise/:id
+  body: none
+  auth: inherit
+}

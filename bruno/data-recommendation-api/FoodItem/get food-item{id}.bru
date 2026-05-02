@@ -1,0 +1,11 @@
+meta {
+  name: get /food-item/{id}
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{data_api_url}}/food-item/:id
+  body: none
+  auth: inherit
+}

@@ -1,0 +1,16 @@
+meta {
+  name: patch /food-item/{id}
+  type: http
+  seq: 15
+}
+
+patch {
+  url: {{data_api_url}}/food-item/:id
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+  }
+}

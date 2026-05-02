@@ -1,0 +1,11 @@
+meta {
+  name: get /workout/{id}
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{tracking_api_url}}/workout/:id
+  body: none
+  auth: inherit
+}

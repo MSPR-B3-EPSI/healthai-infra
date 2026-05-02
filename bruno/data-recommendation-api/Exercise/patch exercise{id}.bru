@@ -1,0 +1,16 @@
+meta {
+  name: patch /exercise/{id}
+  type: http
+  seq: 10
+}
+
+patch {
+  url: {{data_api_url}}/exercise/:id
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+  }
+}

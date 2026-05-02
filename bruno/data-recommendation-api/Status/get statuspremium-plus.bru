@@ -1,0 +1,11 @@
+meta {
+  name: get /status/premium-plus
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{data_api_url}}/status/premium-plus
+  body: none
+  auth: inherit
+}

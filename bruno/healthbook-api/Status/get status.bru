@@ -1,0 +1,11 @@
+meta {
+  name: get /status
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{healthbook_api_url}}/status
+  body: none
+  auth: inherit
+}

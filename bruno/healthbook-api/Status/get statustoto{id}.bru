@@ -1,0 +1,11 @@
+meta {
+  name: get /status/toto/{id}
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{healthbook_api_url}}/status/toto/:id
+  body: none
+  auth: inherit
+}

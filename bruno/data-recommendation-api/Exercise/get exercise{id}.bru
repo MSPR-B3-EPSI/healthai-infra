@@ -1,0 +1,11 @@
+meta {
+  name: get /exercise/{id}
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{data_api_url}}/exercise/:id
+  body: none
+  auth: inherit
+}
