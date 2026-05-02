@@ -13,7 +13,8 @@ services:
       HOST: 0.0.0.0
       CHOKIDAR_USEPOLLING: "true"
       WATCHPACK_POLLING: "true"
-      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER_INTERNAL:-http://keycloak:8080/realms/healthai}
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER_EXTERNAL:-http://localhost:8080/auth/realms/healthai}
+      KEYCLOAK_JWKS_URI: ${KEYCLOAK_ISSUER_INTERNAL:-http://keycloak:8080/auth/realms/healthai}/protocol/openid-connect/certs
       KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE_API:-healthbook-api}
       DATABASE_URL: ${API_DATABASE_URL:-postgresql://api:change-me@postgres_api:5432/api}
     volumes:
@@ -39,7 +40,8 @@ services:
       HOST: 0.0.0.0
       CHOKIDAR_USEPOLLING: "true"
       WATCHPACK_POLLING: "true"
-      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER_INTERNAL:-http://keycloak:8080/realms/healthai}
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER_EXTERNAL:-http://localhost:8080/auth/realms/healthai}
+      KEYCLOAK_JWKS_URI: ${KEYCLOAK_ISSUER_INTERNAL:-http://keycloak:8080/auth/realms/healthai}/protocol/openid-connect/certs
       KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE_TRACKING:-tracking-api}
       DATABASE_URL: ${TRACKING_DATABASE_URL:-postgresql://tracking:change-me@postgres_tracking:5432/tracking}
     volumes:
@@ -65,7 +67,8 @@ services:
       HOST: 0.0.0.0
       CHOKIDAR_USEPOLLING: "true"
       WATCHPACK_POLLING: "true"
-      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER_INTERNAL:-http://keycloak:8080/realms/healthai}
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER_EXTERNAL:-http://localhost:8080/auth/realms/healthai}
+      KEYCLOAK_JWKS_URI: ${KEYCLOAK_ISSUER_INTERNAL:-http://keycloak:8080/auth/realms/healthai}/protocol/openid-connect/certs
       KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE_DATA:-data-recommendation-api}
       DATABASE_URL: ${DATA_DATABASE_URL:-postgresql://data:change-me@postgres_data:5432/data}
     volumes:

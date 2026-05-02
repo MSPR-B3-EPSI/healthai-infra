@@ -1,0 +1,149 @@
+{
+  "realm": "healthai",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "mobile-app",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "redirectUris": ["*"],
+      "webOrigins": ["*"],
+      "defaultClientScopes": ["openid", "profile", "email", "roles", "api-all-access"],
+      "optionalClientScopes": []
+    }
+  ],
+  "roles": {
+    "realm": [
+      { "name": "super-admin" },
+      { "name": "admin" },
+      { "name": "plan-freemium" },
+      { "name": "plan-premium" },
+      { "name": "plan-premium+" }
+    ]
+  },
+  "users": [
+    {
+      "username": "user-freemium",
+      "enabled": true,
+      "email": "freemium@test.local",
+      "firstName": "freemium",
+      "lastName": "freemium",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }],
+      "realmRoles": ["plan-freemium"]
+    },
+    {
+      "username": "user-premium",
+      "enabled": true,
+      "email": "premium@test.local",
+      "firstName": "premium",
+      "lastName": "premium",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }],
+      "realmRoles": ["plan-premium"]
+    },
+    {
+      "username": "user-premium-plus",
+      "enabled": true,
+      "email": "premium-plus@test.local",
+      "firstName": "premium-plus",
+      "lastName": "premium-plus",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }],
+      "realmRoles": ["plan-premium-plus"]
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "api-all-access",
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "aud-healthbook-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "healthbook-api",
+            "access.token.claim": "true"
+          }
+        },
+        {
+          "name": "aud-tracking-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "tracking-api",
+            "access.token.claim": "true"
+          }
+        },
+        {
+          "name": "aud-data-recommendation-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "data-recommendation-api",
+            "access.token.claim": "true"
+          }
+        },
+        {
+          "name": "realm-roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "preferred-username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "username",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "preferred_username",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "email",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "email",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "email",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "sub",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-sub-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "defaultDefaultClientScopes": [
+    "role_list",
+    "profile",
+    "email",
+    "roles",
+    "api-all-access"
+  ]
+}
