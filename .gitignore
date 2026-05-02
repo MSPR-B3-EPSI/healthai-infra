@@ -7,3 +7,9 @@
 
 # Local build artifacts
 .tmp/
+
+# Rogue directories created by Docker if compose paths resolve incorrectly
+healthai-common/node_modules
+healthbook-api//node_modules
+tracking-api//node_modules
+data-recommendation-api/node_modules
