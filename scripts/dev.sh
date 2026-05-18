@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
-
 if [ -z "${BASH_VERSION:-}" ]; then
   echo "This script requires bash." >&2
   echo "Run it as: ./scripts/dev.sh ... or bash scripts/dev.sh ..." >&2
   exit 1
 fi
-
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -23,12 +21,10 @@ COMPOSE_FILES=(
 read_env_var() {
   local key="$1"
   local value=""
-
   if [[ -n "${!key:-}" ]]; then
     echo "${!key}"
     return 0
   fi
-
   if [[ -f "${REPO_ROOT}/.env" ]]; then
     value="$(grep -E "^${key}=" "${REPO_ROOT}/.env" | tail -n1 || true)"
     if [[ -n "$value" ]]; then
@@ -41,7 +37,6 @@ read_env_var() {
       return 0
     fi
   fi
-
   return 1
 }
 
@@ -99,3 +94,14 @@ done
 # Start infrastructure profiles without requiring service images.
 docker compose --project-name "${PROJECT_NAME}" "${COMPOSE_FILES[@]}" --profile core --profile data --profile monitoring --profile airflow up -d
 docker compose --project-name "${PROJECT_NAME}" "${COMPOSE_FILES[@]}" --profile core --profile data --profile services up -d "${TARGETS[@]}"
+
+# Start data-warehouse stack
+DATA_WAREHOUSE_DIR="${REPO_ROOT}/../data-warehouse"
+echo "Starting data-warehouse stack..."
+docker compose -f "${DATA_WAREHOUSE_DIR}/docker-compose.yml" up -d
+
+echo "Loading external datasets into MinIO..."
+docker compose -f "${DATA_WAREHOUSE_DIR}/docker-compose.yml" run --rm dump-runner external
+
+echo "Running ETL MinIO → ClickHouse..."
+cd "${DATA_WAREHOUSE_DIR}" && ./etl/run_all.sh

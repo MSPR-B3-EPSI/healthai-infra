@@ -10,7 +10,6 @@ services:
       - pgdata_airflow:/var/lib/postgresql/data
     networks:
       - app
-
   airflow-init:
     image: apache/airflow:2.9.3
     profiles: ["airflow"]
@@ -35,10 +34,11 @@ services:
       - postgres_airflow
     networks:
       - app
-
   airflow-webserver:
     image: apache/airflow:2.9.3
     profiles: ["airflow"]
+    group_add:
+      - "${DOCKER_GID:-985}"
     command: >
       bash -c "pip install --no-cache-dir -r /opt/airflow/requirements.txt || true;
       airflow webserver"
@@ -46,20 +46,26 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_POSTGRES_USER:-airflow}:${AIRFLOW_POSTGRES_PASSWORD:-change-me}@postgres_airflow:5432/${AIRFLOW_POSTGRES_DB:-airflow}
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      DATA_WAREHOUSE_HOST_DIR: "${DATA_WAREHOUSE_HOST_DIR:-/home/solweg/MSPR/data-warehouse}"
+      CLICKHOUSE_PASSWORD: "${CLICKHOUSE_PASSWORD:-healthbook}"
     ports:
       - "${AIRFLOW_PORT:-8081}:8080"
     volumes:
       - ../airflow/dags:/opt/airflow/dags
       - ../airflow/plugins:/opt/airflow/plugins
       - ../airflow/requirements.txt:/opt/airflow/requirements.txt:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - airflow_logs:/opt/airflow/logs
     depends_on:
       - airflow-init
     networks:
       - app
-
   airflow-scheduler:
     image: apache/airflow:2.9.3
     profiles: ["airflow"]
+    hostname: airflow-scheduler
+    group_add:
+      - "${DOCKER_GID:-985}"
     command: >
       bash -c "pip install --no-cache-dir -r /opt/airflow/requirements.txt || true;
       airflow scheduler"
@@ -67,17 +73,24 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_POSTGRES_USER:-airflow}:${AIRFLOW_POSTGRES_PASSWORD:-change-me}@postgres_airflow:5432/${AIRFLOW_POSTGRES_DB:-airflow}
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      DATA_WAREHOUSE_HOST_DIR: "${DATA_WAREHOUSE_HOST_DIR:-/home/solweg/MSPR/data-warehouse}"
+      CLICKHOUSE_PASSWORD: "${CLICKHOUSE_PASSWORD:-healthbook}"
     volumes:
       - ../airflow/dags:/opt/airflow/dags
       - ../airflow/plugins:/opt/airflow/plugins
       - ../airflow/requirements.txt:/opt/airflow/requirements.txt:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - airflow_logs:/opt/airflow/logs
     depends_on:
       - airflow-init
     networks:
       - app
-
+      - healthbook-net
 networks:
   app:
-
+  healthbook-net:
+    external: true
+    name: healthbook-net
 volumes:
   pgdata_airflow:
+  airflow_logs:
