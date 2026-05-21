@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PROJECT_NAME="${COMPOSE_PROJECT_NAME:-healthai}"
 
-PROFILES=(core services data monitoring airflow)
+PROFILES=(core services data monitoring airflow deep-data)
 PROFILE_ARGS=()
 for profile in "${PROFILES[@]}"; do
   PROFILE_ARGS+=(--profile "$profile")
@@ -18,5 +18,6 @@ docker compose \
   -f "${REPO_ROOT}/compose/compose.data.yaml" \
   -f "${REPO_ROOT}/compose/compose.airflow.yaml" \
   -f "${REPO_ROOT}/compose/compose.monitoring.yaml" \
+  -f "${REPO_ROOT}/compose/compose.deep_data.yaml" \
   "${PROFILE_ARGS[@]}" \
   down

@@ -6,7 +6,7 @@ services:
     command:
       - sh
       - -lc
-      - ${MSPR_API_DEV_COMMAND:-if [ ! -d node_modules/.bin ]; then npm install; fi && npx prisma generate && npx prisma migrate deploy && exec node_modules/.bin/nest start --watch}
+      - ${MSPR_API_DEV_COMMAND:-if [ ! -d node_modules/.bin ]; then npm install; fi && npx prisma generate && npx prisma db push && exec node_modules/.bin/nest start --watch}
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: "3000"
@@ -33,7 +33,7 @@ services:
     command:
       - sh
       - -lc
-      - ${MSPR_TRACKING_DEV_COMMAND:-if [ ! -d node_modules/.bin ]; then npm install; fi && npx prisma generate && npx prisma migrate deploy && exec node_modules/.bin/nest start --watch}
+      - ${MSPR_TRACKING_DEV_COMMAND:-if [ ! -d node_modules/.bin ]; then npm install; fi && npx prisma generate && npx prisma db push && exec node_modules/.bin/nest start --watch}
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: "3001"
@@ -60,7 +60,7 @@ services:
     command:
       - sh
       - -lc
-      - ${MSPR_DATA_DEV_COMMAND:-if [ ! -d node_modules/.bin ]; then npm install; fi && npx prisma generate && npx prisma migrate deploy && exec node_modules/.bin/nest start --watch}
+      - ${MSPR_DATA_DEV_COMMAND:-if [ ! -d node_modules/.bin ]; then npm install; fi && npx prisma generate && npx prisma db push && exec node_modules/.bin/nest start --watch}
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: "3002"

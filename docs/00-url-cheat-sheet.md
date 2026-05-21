@@ -9,7 +9,9 @@ Default ports shown below:
 - `GRAFANA_PORT=3001`
 - `PROMETHEUS_PORT=9090`
 - `LOKI_PORT=3100`
-- `MINIO_PORT=9000`
+- `CLICKHOUSE_HTTP_PORT=8123`
+- `CLICKHOUSE_NATIVE_PORT=9000`
+- `MINIO_API_PORT=9100`
 - `MINIO_CONSOLE_PORT=9001`
 
 If you changed values in `.env`, replace the port numbers accordingly.
@@ -29,6 +31,11 @@ If you changed values in `.env`, replace the port numbers accordingly.
 - Grafana UI: http://localhost:3001
 - Prometheus UI: http://localhost:9090
 - Loki HTTP API base: http://localhost:3100
+
+- ClickHouse HTTP API: http://localhost:8123
+- ClickHouse Play UI: http://localhost:8123/play
+- MinIO console: http://localhost:9001
+- MinIO S3 API (host): http://localhost:9100
 
 ## Internal URLs (Container-to-Container)
 
@@ -51,12 +58,17 @@ Use these only from services running on the same Compose network.
 - Loki from Grafana: http://loki:3100
 - Promtail metrics: http://promtail:9080/metrics
 
+- ClickHouse HTTP API: http://clickhouse:8123
+- ClickHouse native TCP: clickhouse:9000
+- MinIO S3 API: http://minio:9000
+
 ## Profile Availability
 
 - `core`: gateway, keycloak, postgres_keycloak
 - `services`: healthbook-api, tracking-api, data-recommendation-api
-- `data`: postgres_api, postgres_tracking, postgres_data, minio
+- `data`: postgres_api, postgres_tracking, postgres_data
 - `airflow`: airflow-webserver, airflow-scheduler, airflow-init, postgres_airflow
 - `monitoring`: grafana, prometheus, loki, promtail
+- `deep-data`: clickhouse, minio
 
 If a profile is not running, its URLs will not respond.
