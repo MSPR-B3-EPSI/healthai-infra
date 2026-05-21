@@ -11,10 +11,11 @@ COMPOSE_FILES=(
   -f "${REPO_ROOT}/compose/compose.data.yaml"
   -f "${REPO_ROOT}/compose/compose.airflow.yaml"
   -f "${REPO_ROOT}/compose/compose.monitoring.yaml"
+  -f "${REPO_ROOT}/compose/compose.deep_data.yaml"
 )
 
 if [[ $# -eq 0 ]]; then
-  PROFILES=(core services data monitoring airflow)
+  PROFILES=(core services data monitoring airflow deep-data)
 else
   PROFILES=("$@")
 fi

@@ -1,0 +1,48 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    profiles: ["deep-data"]
+    environment:
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-change-me}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-change-me}
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ../deep-data/clickhouse/init:/docker-entrypoint-initdb.d:ro
+      - ../deep-data/clickhouse/config.d:/etc/clickhouse-server/config.d:ro
+      - ../deep-data/clickhouse/users.d:/etc/clickhouse-server/users.d:ro
+    ports:
+      - "${CLICKHOUSE_HTTP_PORT:-8123}:8123"
+      - "${CLICKHOUSE_NATIVE_PORT:-9000}:9000"
+    ulimits:
+      nofile: { soft: 262144, hard: 262144 }
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app
+
+  minio:
+    image: minio/minio:latest
+    profiles: ["deep-data"]
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-change-me}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "${MINIO_API_PORT:-9100}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    networks:
+      - app
+
+networks:
+  app:
+
+volumes:
+  clickhouse_data:
+  minio_data:

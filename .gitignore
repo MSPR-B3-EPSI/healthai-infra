@@ -1,6 +1,8 @@
-.env
-.env.*
+11.env
+11.env.*
 !.env.example
+
+.venv
 
 *.log
 .DS_Store

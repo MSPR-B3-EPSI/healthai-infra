@@ -42,4 +42,3 @@ volumes:
   pgdata_api:
   pgdata_tracking:
   pgdata_data:
-  minio_data:

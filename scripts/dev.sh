@@ -18,6 +18,7 @@ COMPOSE_FILES=(
   -f "${REPO_ROOT}/compose/compose.data.yaml"
   -f "${REPO_ROOT}/compose/compose.airflow.yaml"
   -f "${REPO_ROOT}/compose/compose.monitoring.yaml"
+  -f "${REPO_ROOT}/compose/compose.deep_data.yaml"
 )
 
 read_env_var() {
@@ -97,5 +98,5 @@ for target in "${TARGETS[@]}"; do
 done
 
 # Start infrastructure profiles without requiring service images.
-docker compose --project-name "${PROJECT_NAME}" "${COMPOSE_FILES[@]}" --profile core --profile data --profile monitoring --profile airflow up -d
+docker compose --project-name "${PROJECT_NAME}" "${COMPOSE_FILES[@]}" --profile core --profile data --profile monitoring --profile airflow --profile deep-data up -d
 docker compose --project-name "${PROJECT_NAME}" "${COMPOSE_FILES[@]}" --profile core --profile data --profile services up -d "${TARGETS[@]}"

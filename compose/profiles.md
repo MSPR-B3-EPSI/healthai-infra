@@ -8,7 +8,8 @@ docker compose \
   -f compose/compose.services.yaml \
   -f compose/compose.data.yaml \
   -f compose/compose.airflow.yaml \
-  -f compose/compose.monitoring.yaml
+  -f compose/compose.monitoring.yaml \
+  -f compose/compose.deep_data.yaml
 ```
 
 ## Core only
@@ -48,6 +49,15 @@ docker compose \
   up -d
 ```
 
+## Warehouse stack (ClickHouse + MinIO)
+
+```bash
+docker compose \
+  -f compose/compose.deep_data.yaml \
+  --profile deep-data \
+  up -d
+```
+
 ## Full stack
 
 ```bash
@@ -60,4 +70,4 @@ docker compose \
 ./scripts/dev.sh healthbook-api
 ```
 
-This starts infra profiles (core, data, monitoring, airflow), then starts selected services with local source mounts and watch mode.
+This starts infra profiles (core, data, monitoring, airflow, deep-data), then starts selected services with local source mounts and watch mode.
