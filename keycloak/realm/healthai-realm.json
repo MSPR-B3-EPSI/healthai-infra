@@ -1,6 +1,8 @@
 {
   "realm": "healthai",
   "enabled": true,
+  "registrationAllowed": true,
+  "loginWithEmailAllowed": true,
   "clients": [
     {
       "clientId": "mobile-app",
@@ -8,7 +10,7 @@
       "publicClient": true,
       "directAccessGrantsEnabled": true,
       "standardFlowEnabled": true,
-      "redirectUris": ["*"],
+      "redirectUris": ["*", "healthbook://*", "exp://*"],
       "webOrigins": ["*"],
       "defaultClientScopes": ["openid", "profile", "email", "roles", "api-all-access"],
       "optionalClientScopes": []

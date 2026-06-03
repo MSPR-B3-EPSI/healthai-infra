@@ -96,6 +96,11 @@ for target in "${TARGETS[@]}"; do
   fi
 done
 
+ENV_ARGS=()
+if [[ -f "${REPO_ROOT}/.env" ]]; then
+  ENV_ARGS+=(--env-file "${REPO_ROOT}/.env")
+fi
+
 # Start infrastructure profiles without requiring service images.
-docker compose --project-name "${PROJECT_NAME}" "${COMPOSE_FILES[@]}" --profile core --profile data --profile monitoring --profile airflow up -d
-docker compose --project-name "${PROJECT_NAME}" "${COMPOSE_FILES[@]}" --profile core --profile data --profile services up -d "${TARGETS[@]}"
+docker compose --project-name "${PROJECT_NAME}" "${ENV_ARGS[@]}" "${COMPOSE_FILES[@]}" --profile core --profile data --profile monitoring --profile airflow up -d
+docker compose --project-name "${PROJECT_NAME}" "${ENV_ARGS[@]}" "${COMPOSE_FILES[@]}" --profile core --profile data --profile services up -d "${TARGETS[@]}"

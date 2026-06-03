@@ -13,6 +13,11 @@ COMPOSE_FILES=(
   -f "${REPO_ROOT}/compose/compose.monitoring.yaml"
 )
 
+ENV_ARGS=()
+if [[ -f "${REPO_ROOT}/.env" ]]; then
+  ENV_ARGS+=(--env-file "${REPO_ROOT}/.env")
+fi
+
 if [[ $# -eq 0 ]]; then
   PROFILES=(core services data monitoring airflow)
 else
@@ -24,4 +29,4 @@ for profile in "${PROFILES[@]}"; do
   PROFILE_ARGS+=(--profile "$profile")
 done
 
-docker compose --project-name "${PROJECT_NAME}" "${COMPOSE_FILES[@]}" "${PROFILE_ARGS[@]}" up -d
+docker compose --project-name "${PROJECT_NAME}" "${ENV_ARGS[@]}" "${COMPOSE_FILES[@]}" "${PROFILE_ARGS[@]}" up -d
