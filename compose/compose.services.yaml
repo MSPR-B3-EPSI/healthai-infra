@@ -80,7 +80,55 @@ services:
     networks:
       - app
 
+  healthai-brain-nest-api:
+    image: node:22-bookworm-slim
+    profiles: ["services"]
+    working_dir: /workspace
+    command:
+      - sh
+      - -lc
+      - ${MSPR_BRAIN_DEV_COMMAND:-if [ ! -d node_modules/.bin ]; then npm install; fi && npx prisma generate && npx prisma db push && exec node_modules/.bin/nest start --watch}
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: "3003"
+      HOST: 0.0.0.0
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER_EXTERNAL:-http://localhost:8080/auth/realms/healthai}
+      KEYCLOAK_JWKS_URI: ${KEYCLOAK_ISSUER_INTERNAL:-http://keycloak:8080/auth/realms/healthai}/protocol/openid-connect/certs
+      KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE_BRAIN:-healthai-brain-api}
+      DATABASE_URL: ${BRAIN_DATABASE_URL:-postgresql://brain:change-me@postgres_brain:5432/brain}
+      AI_SERVICE_URL: ${BRAIN_AI_SERVICE_URL:-http://healthai-brain-fastapi-api:8000}
+    volumes:
+      - ${MSPR_BRAIN_NEST_SOURCE_DIR:-../../healthai-brain-api/exposed-nest-api}:/workspace
+      - ${MSPR_BRAIN_NEST_SOURCE_DIR:-../../healthai-brain-api/exposed-nest-api}/node_modules:/workspace/node_modules
+    depends_on:
+      - postgres_brain
+      - keycloak
+      - healthai-brain-fastapi-api
+    networks:
+      - app
+
+  healthai-brain-fastapi-api:
+    image: python:3.11-slim
+    profiles: ["services"]
+    working_dir: /workspace
+    command:
+      - sh
+      - -lc
+      - ${MSPR_BRAIN_FASTAPI_DEV_COMMAND:-if [ ! -f .venv/bin/uvicorn ]; then python -m venv .venv && .venv/bin/pip install -r requirements.txt; fi && exec .venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000 --reload}
+    environment:
+      HF_HOME: /hf-cache
+    volumes:
+      - ${MSPR_BRAIN_FASTAPI_SOURCE_DIR:-../../healthai-brain-api/hidden-fastapi}:/workspace
+      - brain_venv:/workspace/.venv
+      - brain_hf_cache:/hf-cache
+    networks:
+      - app
+
 networks:
   app:
 
-volumes: {}
+volumes:
+  brain_venv:
+  brain_hf_cache:

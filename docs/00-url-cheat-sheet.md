@@ -19,13 +19,14 @@ If you changed values in `.env`, replace the port numbers accordingly.
 ## External URLs (From Host Browser)
 
 - Gateway root: http://localhost:8080
-- Gateway health: http://localhost:8080/api
+- Gateway health: http://localhost:8080/health
 - Keycloak entrypoint (through gateway): http://localhost:8080/auth/
 - Keycloak admin console: http://localhost:8080/auth/admin/master/console/
 
 - API (through gateway): http://localhost:8080/api/
 - Tracking API (through gateway): http://localhost:8080/tracking/
 - Data API (through gateway): http://localhost:8080/data/
+- Brain API (through gateway): http://localhost:8080/brain/
 
 - Airflow UI: http://localhost:8081
 - Grafana UI: http://localhost:3001
@@ -45,13 +46,16 @@ Use these only from services running on the same Compose network.
 - Keycloak base: http://keycloak:8080/
 
 - HealthBook API service: http://healthbook-api:3000/
-- Tracking API service: http://tracking-api:3000/
-- Data Recommendation API service: http://data-recommendation-api:3000/
+- Tracking API service: http://tracking-api:3001/
+- Data Recommendation API service: http://data-recommendation-api:3002/
+- Brain NestJS API service: http://healthai-brain-nest-api:3003/
+- Brain FastAPI service (internal only): http://healthai-brain-fastapi-api:8000/
 
 - Postgres Keycloak: postgres_keycloak:5432
 - Postgres API: postgres_api:5432
 - Postgres Tracking: postgres_tracking:5432
 - Postgres Data: postgres_data:5432
+- Postgres Brain: postgres_brain:5432
 - Postgres Airflow: postgres_airflow:5432
 
 - Prometheus from Grafana: http://prometheus:9090
@@ -65,8 +69,8 @@ Use these only from services running on the same Compose network.
 ## Profile Availability
 
 - `core`: gateway, keycloak, postgres_keycloak
-- `services`: healthbook-api, tracking-api, data-recommendation-api
-- `data`: postgres_api, postgres_tracking, postgres_data
+- `services`: healthbook-api, tracking-api, data-recommendation-api, healthai-brain-nest-api, healthai-brain-fastapi-api
+- `data`: postgres_api, postgres_tracking, postgres_data, postgres_brain
 - `airflow`: airflow-webserver, airflow-scheduler, airflow-init, postgres_airflow
 - `monitoring`: grafana, prometheus, loki, promtail
 - `deep-data`: clickhouse, minio

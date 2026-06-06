@@ -11,8 +11,10 @@ Main paths:
 - /api/\* -> HealthBook API service
 - /tracking/\* -> Tracking API service
 - /data/\* -> Data Recommendation API service
+- /brain/\* -> Brain NestJS API service
 
 Important: NGINX does not validate JWTs. Each service must validate Keycloak tokens.
+The Brain FastAPI (AI inference) is internal only — not exposed through the gateway.
 
 ## Prerequisites
 
@@ -30,7 +32,13 @@ cp .env.example .env
 2. Update required values in .env:
 
 - MSPR_API_SOURCE_DIR, MSPR_TRACKING_SOURCE_DIR, MSPR_DATA_SOURCE_DIR (local service checkouts)
+- MSPR_BRAIN_NEST_SOURCE_DIR (path to healthai-brain-api/exposed-nest-api)
+- MSPR_BRAIN_FASTAPI_SOURCE_DIR (path to healthai-brain-api/hidden-fastapi)
 - Optional password and port overrides
+
+Note: on first start, the Brain FastAPI container installs Python dependencies including PyTorch.
+This can take several minutes. Subsequent starts are instant because the venv is persisted in the
+`brain_venv` Docker volume.
 
 ## Start Commands
 
@@ -60,6 +68,12 @@ You can pass multiple services:
 
 ```bash
 ./scripts/dev.sh healthbook-api tracking-api
+```
+
+Brain API services:
+
+```bash
+./scripts/dev.sh healthai-brain-nest-api healthai-brain-fastapi-api
 ```
 
 This uses bind mounts from `MSPR_*_SOURCE_DIR` and runs the service watch command from `MSPR_*_DEV_COMMAND`.

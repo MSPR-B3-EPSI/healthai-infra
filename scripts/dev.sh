@@ -58,33 +58,41 @@ resolve_source_dir() {
     data-recommendation-api)
       read_env_var MSPR_DATA_SOURCE_DIR || echo "${REPO_ROOT}/../data-recommendation-api"
       ;;
+    healthai-brain-nest-api)
+      read_env_var MSPR_BRAIN_NEST_SOURCE_DIR || echo "${REPO_ROOT}/../healthai-brain-api/exposed-nest-api"
+      ;;
+    healthai-brain-fastapi-api)
+      read_env_var MSPR_BRAIN_FASTAPI_SOURCE_DIR || echo "${REPO_ROOT}/../healthai-brain-api/hidden-fastapi"
+      ;;
     *)
       return 1
       ;;
   esac
 }
 
+ALL_SERVICES=(healthbook-api tracking-api data-recommendation-api healthai-brain-nest-api healthai-brain-fastapi-api)
+
 if [[ $# -eq 0 ]]; then
-  TARGETS=(healthbook-api tracking-api data-recommendation-api)
+  TARGETS=("${ALL_SERVICES[@]}")
 else
   TARGETS=()
   for target in "$@"; do
-    case "$target" in
-      healthbook-api|tracking-api|data-recommendation-api)
-        TARGETS+=("$target")
-        ;;
-      *)
-        echo "Unknown service: $target" >&2
-        echo "Allowed values: healthbook-api, tracking-api, data-recommendation-api" >&2
-        exit 1
-        ;;
-    esac
+    valid=0
+    for svc in "${ALL_SERVICES[@]}"; do
+      [[ "$target" == "$svc" ]] && valid=1 && break
+    done
+    if [[ $valid -eq 0 ]]; then
+      echo "Unknown service: $target" >&2
+      echo "Allowed values: ${ALL_SERVICES[*]}" >&2
+      exit 1
+    fi
+    TARGETS+=("$target")
   done
 fi
 
 if [[ ${#TARGETS[@]} -eq 0 ]]; then
   echo "No dev services selected." >&2
-  echo "Use: ./scripts/dev.sh healthbook-api [tracking-api] [data-recommendation-api]" >&2
+  echo "Use: ./scripts/dev.sh [${ALL_SERVICES[*]}]" >&2
   exit 1
 fi
 

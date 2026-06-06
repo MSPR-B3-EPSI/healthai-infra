@@ -35,6 +35,18 @@ services:
     networks:
       - app
 
+  postgres_brain:
+    image: postgres:16
+    profiles: ["data"]
+    environment:
+      POSTGRES_DB: ${BRAIN_POSTGRES_DB:-brain}
+      POSTGRES_USER: ${BRAIN_POSTGRES_USER:-brain}
+      POSTGRES_PASSWORD: ${BRAIN_POSTGRES_PASSWORD:-change-me}
+    volumes:
+      - pgdata_brain:/var/lib/postgresql/data
+    networks:
+      - app
+
 networks:
   app:
 
@@ -42,3 +54,4 @@ volumes:
   pgdata_api:
   pgdata_tracking:
   pgdata_data:
+  pgdata_brain:

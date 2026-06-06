@@ -12,10 +12,13 @@ The stack is organized into compose profile groups:
   - healthbook-api
   - tracking-api
   - data-recommendation-api
+  - healthai-brain-nest-api (public, routed via /brain/)
+  - healthai-brain-fastapi-api (internal AI inference, not routed via gateway)
 - data
   - postgres_api
   - postgres_tracking
   - postgres_data
+  - postgres_brain
   - minio (optional dev data lake)
 - airflow
   - postgres_airflow
@@ -38,11 +41,15 @@ Routing rules:
 
 - /auth/ -> keycloak:8080/
 - /api/ -> healthbook-api:3000
-- /tracking/ -> tracking-api:3000
-- /data/ -> data-recommendation-api:3000
+- /tracking/ -> tracking-api:3001
+- /data/ -> data-recommendation-api:3002
+- /brain/ -> healthai-brain-nest-api:3003
 
 Path prefixes are stripped before forwarding to backend services.
 Example: /api/v1/patients is forwarded as /v1/patients.
+
+The Brain FastAPI (healthai-brain-fastapi-api:8000) is not routed through the gateway.
+It is only reachable from other containers on the app network, specifically from healthai-brain-nest-api.
 
 Gateway health endpoint:
 
@@ -69,11 +76,26 @@ Each API service has an isolated Postgres database:
 - healthbook-api -> postgres_api
 - tracking-api -> postgres_tracking
 - data-recommendation-api -> postgres_data
+- healthai-brain-nest-api -> postgres_brain
 
 Additional databases:
 
 - postgres_keycloak for Keycloak metadata
 - postgres_airflow for Airflow metadata
+
+## Brain API Model
+
+The Brain API is split into two containers:
+
+- healthai-brain-nest-api: public NestJS service. Handles auth (Keycloak JWT), business logic, and
+  calls the FastAPI for AI inference via AI_SERVICE_URL.
+- healthai-brain-fastapi-api: internal Python/FastAPI service. Runs HuggingFace image classification
+  models. Has no Keycloak auth and is not reachable from outside the Docker network.
+
+Two named volumes persist state across restarts:
+
+- brain_venv: Python virtual environment. Prevents reinstalling PyTorch on every container start.
+- brain_hf_cache: HuggingFace model weights. Prevents re-downloading models on every start.
 
 Optional storage:
 

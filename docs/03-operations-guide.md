@@ -123,6 +123,7 @@ Reset stack and delete all named volumes (destructive):
 - KEYCLOAK_AUDIENCE_API
 - KEYCLOAK_AUDIENCE_TRACKING
 - KEYCLOAK_AUDIENCE_DATA
+- KEYCLOAK_AUDIENCE_BRAIN
 
 ### API DB settings
 
@@ -144,6 +145,21 @@ Reset stack and delete all named volumes (destructive):
 - DATA_POSTGRES_USER
 - DATA_POSTGRES_PASSWORD
 - DATA_DATABASE_URL
+
+### Brain DB settings
+
+- BRAIN_POSTGRES_DB
+- BRAIN_POSTGRES_USER
+- BRAIN_POSTGRES_PASSWORD
+- BRAIN_DATABASE_URL
+
+### Brain source and dev commands
+
+- MSPR_BRAIN_NEST_SOURCE_DIR (path to exposed-nest-api checkout)
+- MSPR_BRAIN_FASTAPI_SOURCE_DIR (path to hidden-fastapi checkout)
+- MSPR_BRAIN_DEV_COMMAND (NestJS watch command override)
+- MSPR_BRAIN_FASTAPI_DEV_COMMAND (uvicorn startup command override)
+- BRAIN_AI_SERVICE_URL (FastAPI internal URL seen by nest, default: http://healthai-brain-fastapi-api:8000)
 
 ### Airflow DB settings
 

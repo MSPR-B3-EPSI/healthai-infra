@@ -75,7 +75,7 @@ Symptoms:
 
 Fix:
 
-- Confirm KEYCLOAK_AUDIENCE_API, KEYCLOAK_AUDIENCE_TRACKING, KEYCLOAK_AUDIENCE_DATA values.
+- Confirm KEYCLOAK_AUDIENCE_API, KEYCLOAK_AUDIENCE_TRACKING, KEYCLOAK_AUDIENCE_DATA, KEYCLOAK_AUDIENCE_BRAIN values.
 - Confirm Keycloak client scopes and audience mapper configuration.
 
 ## 6) Grafana starts but dashboards or datasources are missing
@@ -145,7 +145,43 @@ This removes volumes and local data for this stack:
 
 Use only when you intentionally want a full reset.
 
-## 11) Compose command shows no services
+## 11) /brain returns 502
+
+Possible causes:
+
+- healthai-brain-nest-api not started or still booting
+- healthai-brain-fastapi-api not ready yet (first start installs PyTorch, takes several minutes)
+
+Checks:
+
+```bash
+./scripts/logs.sh healthai-brain-nest-api healthai-brain-fastapi-api
+```
+
+Fix:
+
+- Wait for the FastAPI log line: `Application startup complete.`
+- On very first start, pip install of PyTorch can take 5-15 minutes depending on network speed.
+- If pip install fails, delete the `brain_venv` volume and restart: `docker volume rm healthai_brain_venv`
+
+## 12) Brain FastAPI is slow to start
+
+Cause:
+
+- First startup creates a Python venv and installs requirements including PyTorch (~2GB default, ~200MB CPU-only).
+
+Fix:
+
+- Wait for the log line `Application startup complete.` in healthai-brain-fastapi-api.
+- Subsequent restarts are instant because the venv is persisted in the `brain_venv` Docker volume.
+- To use the CPU-only PyTorch wheel (recommended for dev), update requirements.txt in hidden-fastapi:
+
+```
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.1
+```
+
+## 13) Compose command shows no services
 
 Cause:
 

@@ -19,10 +19,11 @@
           dom_id: "#swagger-ui",
           urls: [
             { url: "/api/api-json", name: "healthbook-api" },
-            { url: "/data/api-json", name: "data-recommendation-api" },
             { url: "/tracking/api-json", name: "tracking-api" },
+            { url: "/data/api-json", name: "data-recommendation-api" },
+            { url: "/brain/api-json", name: "healthai-brain-api" },
           ],
-          "urls.primaryName": "data-recommendation-api",
+          "urls.primaryName": "healthai-brain-api",
           presets: [
             SwaggerUIBundle.presets.apis,
             SwaggerUIStandalonePreset,
