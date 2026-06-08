@@ -81,14 +81,7 @@ This uses bind mounts from `MSPR_*_SOURCE_DIR` and runs the service watch comman
 ### Minimal app stack
 
 ```bash
-docker compose \
-  -f compose/compose.core.yaml \
-  -f compose/compose.services.yaml \
-  -f compose/compose.data.yaml \
-  --profile core \
-  --profile services \
-  --profile data \
-  up -d
+./scripts/up.sh core services data
 ```
 
 ### Stop stack

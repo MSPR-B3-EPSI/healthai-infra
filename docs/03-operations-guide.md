@@ -1,66 +1,13 @@
 # Operations Guide
 
-## Compose File Composition
-
-Most commands should include all compose files:
-
-```bash
-docker compose \
-  -f compose/compose.core.yaml \
-  -f compose/compose.services.yaml \
-  -f compose/compose.data.yaml \
-  -f compose/compose.airflow.yaml \
-  -f compose/compose.monitoring.yaml
-```
-
-## Profiles and Use Cases
-
-### core
-
-Use when validating gateway and identity only.
-
-```bash
-docker compose -f compose/compose.core.yaml --profile core up -d
-```
-
-### services + data + core
-
-Use for API integration and auth flow tests.
-
-```bash
-docker compose \
-  -f compose/compose.core.yaml \
-  -f compose/compose.services.yaml \
-  -f compose/compose.data.yaml \
-  --profile core --profile services --profile data up -d
-```
-
-### monitoring
-
-Use when validating observability stack only.
-
-This profile runs Prometheus, Loki, Grafana, and Promtail.
-
-Provisioned dashboards include:
-
-- MSPR Overview
-- MSPR Container Logs
-
-```bash
-docker compose -f compose/compose.monitoring.yaml --profile monitoring up -d
-```
-
-### airflow
-
-Use when validating schedule workloads.
-
-```bash
-docker compose -f compose/compose.airflow.yaml --profile airflow up -d
-```
-
 ## Repository Helper Scripts
 
-Start all profiles:
+All scripts live in `scripts/` and handle compose file selection automatically.
+Run them from the repo root or any subdirectory — they resolve paths from their own location.
+
+### up.sh — start profiles
+
+Start all profiles (default):
 
 ```bash
 ./scripts/up.sh
@@ -72,28 +19,168 @@ Start specific profiles only:
 ./scripts/up.sh core services data
 ```
 
-Stop containers:
+Available profiles: `core`, `services`, `data`, `monitoring`, `airflow`, `deep-data`
+
+### down.sh — stop containers
 
 ```bash
 ./scripts/down.sh
 ```
 
-Tail logs:
+### logs.sh — tail logs
+
+Tail all running services:
 
 ```bash
 ./scripts/logs.sh
 ```
 
-Tail logs for one service:
+Tail a specific service or multiple services:
 
 ```bash
 ./scripts/logs.sh nginx
+./scripts/logs.sh healthai-brain-nest-api healthai-brain-fastapi-api
 ```
 
-Reset stack and delete all named volumes (destructive):
+### dev.sh — hot-reload mode
+
+Starts infra profiles then mounts source code and runs the watch command for each selected service.
+Requires `MSPR_*_SOURCE_DIR` env vars to point at the service checkouts.
+
+```bash
+./scripts/dev.sh healthbook-api
+./scripts/dev.sh healthbook-api tracking-api data-recommendation-api
+./scripts/dev.sh healthai-brain-nest-api healthai-brain-fastapi-api
+```
+
+### npm-install.sh — install Node dependencies inside a running container
+
+Run `npm install` inside a running NestJS service container (useful after adding a package):
+
+```bash
+./scripts/npm-install.sh
+./scripts/npm-install.sh healthbook-api
+```
+
+### sync-bruno.sh — regenerate Bruno collection from live OpenAPI specs
+
+Fetches the `/api-json` spec from each running service and writes `.bru` request files into `bruno/`:
+
+```bash
+./scripts/sync-bruno.sh
+```
+
+Services must be running before calling this. Existing request files are replaced.
+
+### reset.sh — teardown with volume clearing (destructive)
+
+Full stack reset — removes all containers and all named volumes:
 
 ```bash
 ./scripts/reset.sh --yes
+```
+
+Per-service reset — removes the container and only its named volumes:
+
+```bash
+./scripts/reset.sh --yes <service> [service...]
+```
+
+Run without `--yes` to see usage and the service → volume reference.
+
+#### Examples
+
+Wipe the brain NestJS database only:
+
+```bash
+./scripts/reset.sh --yes postgres_brain
+./scripts/up.sh data
+```
+
+Force-reinstall the Brain FastAPI Python venv (e.g. after changing `requirements.txt`):
+
+```bash
+./scripts/reset.sh --yes healthai-brain-fastapi-api
+./scripts/up.sh services
+```
+
+Re-download HuggingFace model weights only (keeps the venv):
+
+```bash
+./scripts/reset.sh --yes healthai-brain-fastapi-api
+# Then manually: docker volume rm healthai_brain_hf_cache  (brain_venv stays)
+./scripts/up.sh services
+```
+
+Reset Keycloak and its database (realm import re-applies on restart):
+
+```bash
+./scripts/reset.sh --yes keycloak postgres_keycloak
+./scripts/up.sh core
+```
+
+## Adding a Dependency to a Service
+
+### NestJS services (healthbook-api, tracking-api, data-recommendation-api, healthai-brain-nest-api)
+
+1. Add the package to `package.json` in the service source repo.
+2. Install it inside the running container:
+
+```bash
+./scripts/npm-install.sh <service-name>
+```
+
+The watch process will reload automatically after install. If the service is not running, start it first with `./scripts/dev.sh <service-name>`.
+
+### Brain FastAPI (healthai-brain-fastapi-api)
+
+1. Add the package to `hidden-fastapi/requirements.txt`.
+2. Delete the `brain_venv` volume so the startup script reinstalls:
+
+```bash
+./scripts/reset.sh --yes healthai-brain-fastapi-api
+./scripts/up.sh services
+```
+
+The container installs the full venv on its next start and then launches uvicorn.
+
+## Profiles and Use Cases
+
+### core
+
+Gateway and Keycloak only. Use when validating identity flows.
+
+```bash
+./scripts/up.sh core
+```
+
+### services + data + core
+
+API integration and auth flow tests.
+
+```bash
+./scripts/up.sh core services data
+```
+
+### monitoring
+
+Prometheus, Loki, Grafana, and Promtail.
+
+Provisioned dashboards include:
+
+- MSPR Overview
+- MSPR Container Logs
+
+```bash
+./scripts/up.sh monitoring
+```
+
+### airflow
+
+Scheduled workload validation.
+
+```bash
+./scripts/up.sh airflow
 ```
 
 ## Environment Variable Reference

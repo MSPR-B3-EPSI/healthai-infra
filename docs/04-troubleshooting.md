@@ -10,8 +10,7 @@ Possible causes:
 Checks:
 
 ```bash
-docker compose -f compose/compose.core.yaml --profile core ps
-docker compose -f compose/compose.core.yaml logs --tail=200 keycloak
+./scripts/logs.sh keycloak
 ```
 
 Fix:
@@ -29,17 +28,15 @@ Possible causes:
 Checks:
 
 ```bash
-docker compose \
-  -f compose/compose.core.yaml \
-  -f compose/compose.services.yaml \
-  -f compose/compose.data.yaml \
-  --profile core --profile services --profile data ps
+./scripts/logs.sh healthbook-api
+./scripts/logs.sh tracking-api
+./scripts/logs.sh data-recommendation-api
 ```
 
 Fix:
 
-- Start missing profiles.
-- Check logs for healthbook-api, tracking-api, or data-recommendation-api.
+- Start missing profiles: `./scripts/up.sh core services data`
+- Check logs for the failing service.
 
 ## 3) Services fail at startup with DB connection errors
 
@@ -83,7 +80,7 @@ Fix:
 Checks:
 
 ```bash
-docker compose -f compose/compose.monitoring.yaml --profile monitoring logs --tail=200 grafana
+./scripts/logs.sh grafana
 ```
 
 Fix:
@@ -111,7 +108,7 @@ Note:
 Checks:
 
 ```bash
-docker compose -f compose/compose.monitoring.yaml --profile monitoring logs --tail=200 promtail loki
+./scripts/logs.sh promtail loki
 ```
 
 Fix:
@@ -126,7 +123,7 @@ Fix:
 Checks:
 
 ```bash
-docker compose -f compose/compose.airflow.yaml --profile airflow logs --tail=200 airflow-init airflow-webserver airflow-scheduler
+./scripts/logs.sh airflow-init airflow-webserver airflow-scheduler
 ```
 
 Fix:
@@ -137,13 +134,20 @@ Fix:
 
 ## 10) Need a clean state
 
-This removes volumes and local data for this stack:
+**Full stack reset** — removes all containers and named volumes:
 
 ```bash
 ./scripts/reset.sh --yes
 ```
 
-Use only when you intentionally want a full reset.
+**Single service reset** — removes the container and its named volumes:
+
+```bash
+./scripts/reset.sh --yes <service-name>
+./scripts/up.sh <profiles>
+```
+
+Run `./scripts/reset.sh` without arguments to see the service → volume reference.
 
 ## 11) /brain returns 502
 
