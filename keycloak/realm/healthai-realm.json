@@ -85,6 +85,15 @@
           }
         },
         {
+          "name": "aud-healthai-brain-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "healthai-brain-api",
+            "access.token.claim": "true"
+          }
+        },
+        {
           "name": "realm-roles",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-usermodel-realm-role-mapper",
