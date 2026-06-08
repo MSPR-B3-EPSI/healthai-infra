@@ -11,7 +11,7 @@ services:
       - clickhouse_data:/var/lib/clickhouse
       - ../deep-data/clickhouse/init:/docker-entrypoint-initdb.d:ro
       - ../deep-data/clickhouse/config.d:/etc/clickhouse-server/config.d:ro
-      - ../deep-data/clickhouse/users.d:/etc/clickhouse-server/users.d:ro
+      - ../deep-data/clickhouse/users.d:/etc/clickhouse-server/users.d
     ports:
       - "${CLICKHOUSE_HTTP_PORT:-8123}:8123"
       - "${CLICKHOUSE_NATIVE_PORT:-9000}:9000"
