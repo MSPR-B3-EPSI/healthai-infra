@@ -1,118 +1,95 @@
 -- 0) Reset
-TRUNCATE TABLE workout_session.session;
-TRUNCATE TABLE workout_session.workout_type;
-TRUNCATE TABLE workout_session.raw_csv;
-TRUNCATE TABLE workout_session.raw_api;
+TRUNCATE TABLE exercise_db.raw_exercise;
+TRUNCATE TABLE exercise_db.muscle;
+TRUNCATE TABLE exercise_db.equipment;
+TRUNCATE TABLE exercise_db.exercise_category;
+TRUNCATE TABLE exercise_db.exercise;
 
--- 1) CSV externe (Kaggle) → raw_csv (mapping nominal)
-INSERT INTO workout_session.raw_csv
-(age, gender, weight_kg, height_m, max_bpm, avg_bpm, resting_bpm,
- session_duration_hours, calories_burned, workout_type, fat_percentage,
- water_intake_liters, workout_frequency_days_week, experience_level, bmi)
+-- 1) Ingestion brute MinIO → raw (mapping nominal)
+--    Le JSON est un tableau d'objets ; CSVWithNames-équivalent côté JSON = JSONEachRow.
+--    Les champs `force`, `mechanic`, `equipment` peuvent être null dans le source
+--    → on les déclare Nullable(String) puis on les normalise en '' à l'INSERT.
+INSERT INTO exercise_db.raw_exercise
+(id_str, name, force, level, mechanic, equipment, category,
+ primary_muscles, secondary_muscles, instructions, images)
 SELECT
-    "Age"                                AS age,
-    "Gender"                             AS gender,
-    "Weight (kg)"                        AS weight_kg,
-    "Height (m)"                         AS height_m,
-    "Max_BPM"                            AS max_bpm,
-    "Avg_BPM"                            AS avg_bpm,
-    "Resting_BPM"                        AS resting_bpm,
-    "Session_Duration (hours)"           AS session_duration_hours,
-    "Calories_Burned"                    AS calories_burned,
-    "Workout_Type"                       AS workout_type,
-    "Fat_Percentage"                     AS fat_percentage,
-    "Water_Intake (liters)"              AS water_intake_liters,
-    "Workout_Frequency (days/week)"      AS workout_frequency_days_week,
-    "Experience_Level"                   AS experience_level,
-    "BMI"                                AS bmi
+    id                              AS id_str,
+    name,
+    ifNull(force, '')               AS force,
+    level,
+    ifNull(mechanic, '')            AS mechanic,
+    ifNull(equipment, '')           AS equipment,
+    category,
+    primaryMuscles                  AS primary_muscles,
+    secondaryMuscles                AS secondary_muscles,
+    instructions,
+    images
 FROM s3(
     minio_lake,
-    filename = 'raw/external/workout_session/_latest.csv',
-    format   = 'CSVWithNames',
-    structure = '"Age" UInt8, "Gender" String, "Weight (kg)" Float32, "Height (m)" Float32,
-                 "Max_BPM" UInt16, "Avg_BPM" UInt16, "Resting_BPM" UInt16,
-                 "Session_Duration (hours)" Float32, "Calories_Burned" Float32,
-                 "Workout_Type" String, "Fat_Percentage" Float32,
-                 "Water_Intake (liters)" Float32, "Workout_Frequency (days/week)" UInt8,
-                 "Experience_Level" UInt8, "BMI" Float32'
+    filename = 'raw/external/exercise/_latest.json',
+    format   = 'JSONEachRow',
+    structure = 'id String, name String,
+                 force Nullable(String), level String, mechanic Nullable(String),
+                 equipment Nullable(String), category String,
+                 primaryMuscles Array(String), secondaryMuscles Array(String),
+                 instructions Array(String), images Array(String)'
 )
 SETTINGS
     input_format_allow_errors_num = 100,
     input_format_allow_errors_ratio = 0.1
 ;
 
--- 2) Dump API → raw_api (les noms matchent déjà, on peut utiliser CSVWithNames simple)
-INSERT INTO workout_session.raw_api
-(age, gender, weight_kg, height_m, max_bpm, avg_bpm, resting_bpm,
- session_duration_hours, calories_burned, workout_type, fat_percentage,
- water_intake_liters, workout_frequency_days_week, experience_level, bmi)
-SELECT
-    age, gender, weight_kg, height_m, max_bpm, avg_bpm, resting_bpm,
-    session_duration_hours, calories_burned, workout_type, fat_percentage,
-    water_intake_liters, workout_frequency_days_week, experience_level, bmi
-FROM s3(
-    minio_lake,
-    filename = 'raw/api/workout_session/_latest.csv',
-    format   = 'CSVWithNames',
-    structure = 'age UInt8, gender String, weight_kg Float32, height_m Float32,
-                 max_bpm UInt16, avg_bpm UInt16, resting_bpm UInt16,
-                 session_duration_hours Float32, calories_burned Float32,
-                 workout_type String, fat_percentage Float32,
-                 water_intake_liters Float32, workout_frequency_days_week UInt8,
-                 experience_level UInt8, bmi Float32'
-)
-SETTINGS
-    input_format_allow_errors_num = 100,
-    input_format_allow_errors_ratio = 0.1
-;
-
--- 3) Dimension workout_type : union des 2 sources
-INSERT INTO workout_session.workout_type (id, name, created_at, updated_at)
+-- 2) Dimension muscle : union des primary + secondary muscles distincts
+INSERT INTO exercise_db.muscle (id, name, created_at, updated_at)
 SELECT
     toUInt32(cityHash64(name) % 4294967295) AS id,
     name,
     now64(3),
     now64(3)
 FROM (
-    SELECT DISTINCT workout_type AS name FROM workout_session.raw_csv WHERE workout_type != ''
+    SELECT DISTINCT arrayJoin(primary_muscles) AS name
+    FROM exercise_db.raw_exercise WHERE length(primary_muscles) > 0
     UNION DISTINCT
-    SELECT DISTINCT workout_type AS name FROM workout_session.raw_api WHERE workout_type != ''
-);
+    SELECT DISTINCT arrayJoin(secondary_muscles) AS name
+    FROM exercise_db.raw_exercise WHERE length(secondary_muscles) > 0
+)
+WHERE name != '';
 
--- 4) Sessions du CSV
-INSERT INTO workout_session.session
+-- 3) Dimension equipment
+INSERT INTO exercise_db.equipment (id, name, created_at, updated_at)
 SELECT
-    cityHash64('csv', rowNumberInAllBlocks(), age, gender, workout_type, calories_burned) AS id,
-    'external_csv' AS source,
-    0 AS member_id,
-    0 AS snapshot_id,
-    age, gender, height_m, weight_kg, bmi, fat_percentage,
-    experience_level, workout_frequency_days_week AS workout_frequency_per_week,
-    toUInt32(cityHash64(workout_type) % 4294967295) AS workout_type_id,
-    workout_type AS workout_type_name,
-    session_duration_hours AS duration_hours,
-    calories_burned AS calories,
-    avg_bpm, max_bpm, resting_bpm, water_intake_liters,
-    NULL AS started_at,
-    now64(3) AS created_at,
-    now64(3) AS updated_at
-FROM workout_session.raw_csv;
+    toUInt32(cityHash64(name) % 4294967295) AS id,
+    name,
+    now64(3),
+    now64(3)
+FROM (SELECT DISTINCT equipment AS name FROM exercise_db.raw_exercise WHERE equipment != '');
 
--- 5) Sessions API
-INSERT INTO workout_session.session
+-- 4) Dimension exercise_category
+INSERT INTO exercise_db.exercise_category (id, name, created_at, updated_at)
 SELECT
-    cityHash64('api', rowNumberInAllBlocks(), age, gender, workout_type, calories_burned) AS id,
-    'api' AS source,
-    0 AS member_id,
-    0 AS snapshot_id,
-    age, gender, height_m, weight_kg, bmi, fat_percentage,
-    experience_level, workout_frequency_days_week AS workout_frequency_per_week,
-    toUInt32(cityHash64(workout_type) % 4294967295) AS workout_type_id,
-    workout_type AS workout_type_name,
-    session_duration_hours AS duration_hours,
-    calories_burned AS calories,
-    avg_bpm, max_bpm, resting_bpm, water_intake_liters,
-    NULL AS started_at,
-    now64(3) AS created_at,
-    now64(3) AS updated_at
-FROM workout_session.raw_api;
+    toUInt32(cityHash64(name) % 4294967295) AS id,
+    name,
+    now64(3),
+    now64(3)
+FROM (SELECT DISTINCT category AS name FROM exercise_db.raw_exercise WHERE category != '');
+
+-- 5) Table principale exercise (dénormalisée — colonnes _name aplaties à côté des _id)
+INSERT INTO exercise_db.exercise
+SELECT
+    toUInt32(cityHash64(id_str) % 4294967295)                                AS id,
+    name,
+    force,
+    level,
+    mechanic,
+    toJSONString(instructions)                                               AS instruction,
+    toJSONString(images)                                                     AS photo,
+    arrayMap(m -> toUInt32(cityHash64(m) % 4294967295), primary_muscles)     AS primary_muscle_ids,
+    arrayMap(m -> toUInt32(cityHash64(m) % 4294967295), secondary_muscles)   AS secondary_muscle_ids,
+    toUInt32(cityHash64(category) % 4294967295)                              AS category_id,
+    if(equipment = '', 0, toUInt32(cityHash64(equipment) % 4294967295))      AS equipment_id,
+    category                                                                 AS category_name,
+    equipment                                                                AS equipment_name,
+    primary_muscles                                                          AS primary_muscle_names,
+    now64(3),
+    now64(3)
+FROM exercise_db.raw_exercise;

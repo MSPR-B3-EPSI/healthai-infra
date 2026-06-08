@@ -13,17 +13,32 @@ INSERT INTO workout_session.raw_csv
 (age, gender, weight_kg, height_m, max_bpm, avg_bpm, resting_bpm,
  session_duration_hours, calories_burned, workout_type, fat_percentage,
  water_intake_liters, workout_frequency_days_week, experience_level, bmi)
-SELECT *
+SELECT
+    "Age"                              AS age,
+    "Gender"                           AS gender,
+    "Weight (kg)"                      AS weight_kg,
+    "Height (m)"                       AS height_m,
+    "Max_BPM"                          AS max_bpm,
+    "Avg_BPM"                          AS avg_bpm,
+    "Resting_BPM"                      AS resting_bpm,
+    "Session_Duration (hours)"         AS session_duration_hours,
+    "Calories_Burned"                  AS calories_burned,
+    "Workout_Type"                     AS workout_type,
+    "Fat_Percentage"                   AS fat_percentage,
+    "Water_Intake (liters)"            AS water_intake_liters,
+    "Workout_Frequency (days/week)"    AS workout_frequency_days_week,
+    "Experience_Level"                 AS experience_level,
+    "BMI"                              AS bmi
 FROM s3(
     minio_lake,
     filename = 'raw/external/workout_session/_latest.csv',
     format   = 'CSVWithNames',
-    structure = 'age UInt8, gender String, weight_kg Float32, height_m Float32,
-                 max_bpm UInt16, avg_bpm UInt16, resting_bpm UInt16,
-                 session_duration_hours Float32, calories_burned Float32,
-                 workout_type String, fat_percentage Float32,
-                 water_intake_liters Float32, workout_frequency_days_week UInt8,
-                 experience_level UInt8, bmi Float32'
+    structure = '"Age" UInt8, "Gender" String, "Weight (kg)" Float32, "Height (m)" Float32,
+                 "Max_BPM" UInt16, "Avg_BPM" UInt16, "Resting_BPM" UInt16,
+                 "Session_Duration (hours)" Float32, "Calories_Burned" Float32,
+                 "Workout_Type" String, "Fat_Percentage" Float32,
+                 "Water_Intake (liters)" Float32, "Workout_Frequency (days/week)" UInt8,
+                 "Experience_Level" UInt8, "BMI" Float32'
 )
 SETTINGS
     input_format_allow_errors_num = 100,
