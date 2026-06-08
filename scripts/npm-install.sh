@@ -13,23 +13,23 @@ COMPOSE_FILES=(
   -f "${REPO_ROOT}/compose/compose.monitoring.yaml"
 )
 
-ALL_SERVICES=(healthbook-api tracking-api data-recommendation-api)
+ALL_SERVICES=(healthbook-api tracking-api data-recommendation-api healthai-brain-nest-api)
 
 if [[ $# -eq 0 ]]; then
   TARGETS=("${ALL_SERVICES[@]}")
 else
   TARGETS=()
   for target in "$@"; do
-    case "$target" in
-      healthbook-api|tracking-api|data-recommendation-api)
-        TARGETS+=("$target")
-        ;;
-      *)
-        echo "Unknown service: $target" >&2
-        echo "Allowed values: ${ALL_SERVICES[*]}" >&2
-        exit 1
-        ;;
-    esac
+    valid=0
+    for svc in "${ALL_SERVICES[@]}"; do
+      [[ "$target" == "$svc" ]] && valid=1 && break
+    done
+    if [[ $valid -eq 0 ]]; then
+      echo "Unknown service: $target" >&2
+      echo "Allowed values: ${ALL_SERVICES[*]}" >&2
+      exit 1
+    fi
+    TARGETS+=("$target")
   done
 fi
 
