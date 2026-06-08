@@ -1,0 +1,15 @@
+meta {
+  name: post /vision/analyze
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{brain_api_url}}/vision/analyze
+  body: multipart-form
+  auth: inherit
+}
+
+body:multipart-form {
+  image: @file()
+}

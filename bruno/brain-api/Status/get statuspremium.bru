@@ -1,0 +1,11 @@
+meta {
+  name: get /status/premium
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{brain_api_url}}/status/premium
+  body: none
+  auth: inherit
+}
