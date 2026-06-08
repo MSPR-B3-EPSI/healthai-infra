@@ -20,7 +20,7 @@
       { "name": "admin" },
       { "name": "plan-freemium" },
       { "name": "plan-premium" },
-      { "name": "plan-premium+" }
+      { "name": "plan-premium-plus" }
     ]
   },
   "users": [
