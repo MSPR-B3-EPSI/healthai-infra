@@ -76,7 +76,7 @@ FROM (SELECT DISTINCT category AS name FROM exercise_db.raw_exercise WHERE categ
 -- 5) Table principale exercise (dénormalisée — colonnes _name aplaties à côté des _id)
 INSERT INTO exercise_db.exercise
 SELECT
-    toUInt32(cityHash64(id_str) % 4294967295)                                AS id,
+    id_str                                                                   AS id,
     name,
     force,
     level,

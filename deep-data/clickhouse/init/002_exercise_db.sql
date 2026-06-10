@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS exercise_db.exercise_category (
 ) ENGINE = ReplacingMergeTree(updated_at) ORDER BY id;
 
 CREATE TABLE IF NOT EXISTS exercise_db.exercise (
-    id                   UInt32,
+    id                   String,
     name                 String,
     force                LowCardinality(String),
     level                LowCardinality(String),
