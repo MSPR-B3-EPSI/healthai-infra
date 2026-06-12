@@ -221,13 +221,40 @@ def load_food_item(client: Minio, conn: psycopg.Connection) -> None:
 
     with conn.cursor() as cur:
         # 1. Catégories : upsert et map name → id
+        # Skip les rows malformés (CSV externe avec virgules non échappées dans
+        # certains noms — ex: "Milk (2%, 1 cup)" → décalage de colonnes).
         category_ids: dict[str, int] = {}
-        for cat_name in {r["category"] for r in rows if r["category"]}:
+        valid_categories = set()
+        for r in rows:
+            try:
+                # Sanity check : si "calories" n'est pas un int, la ligne est décalée.
+                int(r["calories"] or 0)
+                if r["category"]:
+                    valid_categories.add(r["category"])
+            except (ValueError, TypeError):
+                continue
+        for cat_name in valid_categories:
             category_ids[cat_name] = upsert_lookup(cur, "daily_food_nutrition_food_category", cat_name)
 
-        # 2. FoodItem : upsert par (name)
+        # 2. FoodItem : upsert par (name) — skip silencieusement les rows malformés.
+        loaded = 0
+        skipped = 0
         for r in rows:
-            cat_id = category_ids.get(r["category"])
+            try:
+                values = (
+                    r["food_item"], r["meal_type"],
+                    [category_ids[r["category"]]] if r["category"] in category_ids else [],
+                    int(r["calories"] or 0),
+                    float(r["protein_g"] or 0), float(r["carbohydrates_g"] or 0),
+                    float(r["fat_g"] or 0), float(r["fiber_g"] or 0),
+                    float(r["sugars_g"] or 0),
+                    int(r["sodium_mg"] or 0), int(r["cholesterol_mg"] or 0),
+                    int(r["water_intake_ml"] or 0),
+                )
+            except (ValueError, TypeError):
+                skipped += 1
+                continue
+
             cur.execute(
                 """
                 INSERT INTO daily_food_nutrition_food_item
@@ -248,19 +275,11 @@ def load_food_item(client: Minio, conn: psycopg.Connection) -> None:
                     water_intake_ml = EXCLUDED.water_intake_ml,
                     updated_at      = now()
                 """,
-                (
-                    r["food_item"], r["meal_type"],
-                    [cat_id] if cat_id else [],
-                    int(r["calories"] or 0),
-                    float(r["protein_g"] or 0), float(r["carbohydrates_g"] or 0),
-                    float(r["fat_g"] or 0), float(r["fiber_g"] or 0),
-                    float(r["sugars_g"] or 0),
-                    int(r["sodium_mg"] or 0), int(r["cholesterol_mg"] or 0),
-                    int(r["water_intake_ml"] or 0),
-                ),
+                values,
             )
+            loaded += 1
     conn.commit()
-    print(f"  ✓ loaded {len(rows)} food_items")
+    print(f"  ✓ loaded {loaded} food_items (skipped {skipped} malformed CSV rows)")
 
 
 def load_exercise(client: Minio, conn: psycopg.Connection) -> None:

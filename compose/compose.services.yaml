@@ -121,6 +121,9 @@ services:
       HF_HOME: /hf-cache
     volumes:
       - ${MSPR_BRAIN_FASTAPI_SOURCE_DIR:-../../healthai-brain-api/hidden-fastapi}:/workspace
+      # Modèle ML monté en read-only depuis ml/exercise/ — l'API charge `latest.joblib`,
+      # mis à jour par le notebook 05 (réentraînement). Plus besoin de `docker cp`.
+      - ${MSPR_ML_EXERCISE_MODEL_DIR:-../../healthai-brain-api/ml/exercise/model}:/workspace/model:ro
       - brain_venv:/workspace/.venv
       - brain_hf_cache:/hf-cache
     networks:
