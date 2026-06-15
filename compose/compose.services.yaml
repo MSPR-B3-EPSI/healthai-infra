@@ -119,11 +119,22 @@ services:
       - ${MSPR_BRAIN_FASTAPI_DEV_COMMAND:-if [ ! -f .venv/bin/uvicorn ]; then python -m venv .venv && .venv/bin/pip install -r requirements.txt; fi && exec .venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000 --reload}
     environment:
       HF_HOME: /hf-cache
+      # MinIO — fallback download du modèle si absent du volume + upload par train.py
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-change-me}
+      MINIO_BUCKET: lake
+      # ClickHouse — utilisé par `scripts/train.py` (load_sessions) au réentraînement
+      CH_HOST: clickhouse
+      CH_PORT: "8123"
+      CH_USER: default
+      CH_PASSWORD: ${CLICKHOUSE_PASSWORD:-change-me}
+      CH_DATABASE: workout_session
     volumes:
       - ${MSPR_BRAIN_FASTAPI_SOURCE_DIR:-../../healthai-brain-api/hidden-fastapi}:/workspace
-      # Modèle ML monté en read-only depuis ml/exercise/ — l'API charge `latest.joblib`,
-      # mis à jour par le notebook 05 (réentraînement). Plus besoin de `docker cp`.
-      - ${MSPR_ML_EXERCISE_MODEL_DIR:-../../healthai-brain-api/ml/exercise/model}:/workspace/model:ro
+      # Volume modèle (RW) : train.py écrit dedans (déclenché par Airflow via docker exec),
+      # FastAPI lit au boot. Si vide, fallback download depuis MinIO (cf. exercise/service.py).
+      - ${MSPR_ML_EXERCISE_MODEL_DIR:-../../healthai-brain-api/ml/exercise/model}:/workspace/model
       - brain_venv:/workspace/.venv
       - brain_hf_cache:/hf-cache
     networks:

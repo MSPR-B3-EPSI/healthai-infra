@@ -54,21 +54,15 @@ services:
       CLICKHOUSE_PORT: "9000"
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-change-me}
       MINIO_ENDPOINT: http://minio:9000
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-admin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-admin}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-change-me}
       # dump.py attend ACCESS_KEY/SECRET_KEY ; on alias depuis ROOT_USER/PASSWORD.
-      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-admin}
-      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-admin}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-change-me}
       MINIO_BUCKET: lake
       TRACKING_API_URL: http://tracking-api:3000
       RECOMMENDATION_API_URL: http://data-recommendation-api:3000
       RECOMMENDATION_DB_URL: postgresql://${DATA_POSTGRES_USER:-data}:${DATA_POSTGRES_PASSWORD:-change-me}@postgres_data:5432/${DATA_POSTGRES_DB:-data}
-      # Variables ClickHouse pour le DAG d'entraînement (cf. healthbook_ml.data).
-      CH_HOST: clickhouse
-      CH_PORT: "8123"
-      CH_USER: default
-      CH_PASSWORD: ${CLICKHOUSE_PASSWORD:-change-me}
-      CH_DATABASE: workout_session
     ports:
       - "${AIRFLOW_PORT:-8081}:8080"
     volumes:
@@ -77,9 +71,6 @@ services:
       - ../airflow/scripts:/opt/airflow/scripts:ro
       - ../airflow/requirements.txt:/opt/airflow/requirements.txt:ro
       - ../deep-data/datasets:/opt/airflow/datasets:ro
-      # ml/exercise/ monté en lecture-écriture pour permettre au DAG d'entraînement
-      # d'écrire `model/latest.joblib`, lu en read-only par le container FastAPI.
-      - ../../healthai-brain-api/ml/exercise:/opt/airflow/ml_exercise
     depends_on:
       - airflow-init
     networks:
@@ -88,6 +79,11 @@ services:
   airflow-scheduler:
     image: apache/airflow:2.9.3
     profiles: ["airflow"]
+    # Le user `airflow` (UID 50000) doit appartenir au groupe `docker` du host
+    # pour pouvoir parler au socket monté. Le GID varie selon l'host — défaut
+    # `962` (Arch). Override possible via `DOCKER_GID=<gid>` dans `.env`.
+    group_add:
+      - "${DOCKER_GID:-962}"
     command: >
       bash -c "pip install --no-cache-dir -r /opt/airflow/requirements.txt || true;
       airflow scheduler"
@@ -110,20 +106,18 @@ services:
       TRACKING_API_URL: http://tracking-api:3000
       RECOMMENDATION_API_URL: http://data-recommendation-api:3000
       RECOMMENDATION_DB_URL: postgresql://${DATA_POSTGRES_USER:-data}:${DATA_POSTGRES_PASSWORD:-change-me}@postgres_data:5432/${DATA_POSTGRES_DB:-data}
-      # Variables ClickHouse pour le DAG d'entraînement (cf. healthbook_ml.data).
-      CH_HOST: clickhouse
-      CH_PORT: "8123"
-      CH_USER: default
-      CH_PASSWORD: ${CLICKHOUSE_PASSWORD:-change-me}
-      CH_DATABASE: workout_session
     volumes:
       - ../airflow/dags:/opt/airflow/dags
       - ../airflow/plugins:/opt/airflow/plugins
       - ../airflow/scripts:/opt/airflow/scripts:ro
       - ../airflow/requirements.txt:/opt/airflow/requirements.txt:ro
       - ../deep-data/datasets:/opt/airflow/datasets:ro
-      # ml/exercise/ monté en lecture-écriture (le scheduler exécute le DAG train).
-      - ../../healthai-brain-api/ml/exercise:/opt/airflow/ml_exercise
+      # Le DAG `train_exercise_duration_model` invoque `docker exec` sur le
+      # container FastAPI. On expose le socket + binaire Docker du host.
+      # Pattern "docker-in-docker lite" pour le POC ; migration future possible
+      # vers `DockerOperator` (apache-airflow-providers-docker).
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker:ro
     depends_on:
       - airflow-init
     networks:
