@@ -27,6 +27,17 @@ RETRY_DELAY="${RETRY_DELAY:-10}"
 TIMEOUT="${TIMEOUT:-5}"
 QUIET="${1:-}"
 
+# ─── Ports configurables (depuis .env, sinon defaults dev local) ─────────────
+# Si tu lances depuis Jenkins, source le .env avant : `set -a; . ./.env; set +a`
+HOST="${HOST:-localhost}"
+GATEWAY_PORT="${GATEWAY_PORT:-8080}"             # Nginx gateway (proxy vers keycloak + APIs)
+AIRFLOW_PORT="${AIRFLOW_PORT:-8081}"             # Airflow webserver
+CLICKHOUSE_HTTP_PORT="${CLICKHOUSE_HTTP_PORT:-8123}"
+MINIO_API_PORT="${MINIO_API_PORT:-9100}"
+MINIO_CONSOLE_PORT="${MINIO_CONSOLE_PORT:-9001}"
+PROMETHEUS_PORT="${PROMETHEUS_PORT:-9090}"
+GRAFANA_PORT="${GRAFANA_PORT:-3001}"
+
 # Couleurs (désactivées si stdout n'est pas un terminal — utile dans Jenkins)
 if [[ -t 1 ]]; then
   RED=$'\033[0;31m'
@@ -46,14 +57,14 @@ fi
 # - grep_pattern : si présent, le body doit matcher (regex grep)
 
 ENDPOINTS=(
-  "Gateway Nginx (brain/docs)|http://localhost:8080/brain/docs|200|"
-  "Keycloak (realm healthai)|http://localhost:8080/auth/realms/healthai/.well-known/openid-configuration|200|issuer"
-  "Airflow webserver|http://localhost:8081/health|200|healthy"
-  "ClickHouse HTTP|http://localhost:8123/ping|200|Ok"
-  "MinIO API health|http://localhost:9100/minio/health/live|200|"
-  "MinIO Console|http://localhost:9001/|200|"
-  "Prometheus|http://localhost:9090/-/healthy|200|Healthy"
-  "Grafana|http://localhost:3001/api/health|200|database"
+  "Gateway Nginx (brain/docs)|http://${HOST}:${GATEWAY_PORT}/brain/docs|200|"
+  "Keycloak (realm healthai)|http://${HOST}:${GATEWAY_PORT}/auth/realms/healthai/.well-known/openid-configuration|200|issuer"
+  "Airflow webserver|http://${HOST}:${AIRFLOW_PORT}/health|200|healthy"
+  "ClickHouse HTTP|http://${HOST}:${CLICKHOUSE_HTTP_PORT}/ping|200|Ok"
+  "MinIO API health|http://${HOST}:${MINIO_API_PORT}/minio/health/live|200|"
+  "MinIO Console|http://${HOST}:${MINIO_CONSOLE_PORT}/|200|"
+  "Prometheus|http://${HOST}:${PROMETHEUS_PORT}/-/healthy|200|Healthy"
+  "Grafana|http://${HOST}:${GRAFANA_PORT}/api/health|200|database"
 )
 
 
