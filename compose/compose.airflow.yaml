@@ -12,7 +12,13 @@ services:
       - app
 
   airflow-init:
-    image: apache/airflow:2.9.3
+    # Image custom : Airflow + postgresql-client (pour `pg_dump` dans le DAG backup).
+    # `docker compose build` construit une fois ; les 3 services Airflow partagent
+    # la même image taggée `healthai-airflow:custom`.
+    build:
+      context: ../airflow
+      dockerfile: Dockerfile
+    image: healthai-airflow:custom
     profiles: ["airflow"]
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
@@ -38,7 +44,7 @@ services:
       - app
 
   airflow-webserver:
-    image: apache/airflow:2.9.3
+    image: healthai-airflow:custom
     profiles: ["airflow"]
     command: >
       bash -c "pip install --no-cache-dir -r /opt/airflow/requirements.txt || true;
@@ -77,7 +83,7 @@ services:
       - app
 
   airflow-scheduler:
-    image: apache/airflow:2.9.3
+    image: healthai-airflow:custom
     profiles: ["airflow"]
     # Le user `airflow` (UID 50000) doit appartenir au groupe `docker` du host
     # pour pouvoir parler au socket monté. Le GID varie selon l'host — défaut
@@ -106,6 +112,16 @@ services:
       TRACKING_API_URL: http://tracking-api:3000
       RECOMMENDATION_API_URL: http://data-recommendation-api:3000
       RECOMMENDATION_DB_URL: postgresql://${DATA_POSTGRES_USER:-data}:${DATA_POSTGRES_PASSWORD:-change-me}@postgres_data:5432/${DATA_POSTGRES_DB:-data}
+      # Credentials Postgres pour le DAG `backup_dbs_to_lake` (pg_dump).
+      API_POSTGRES_USER: ${API_POSTGRES_USER:-api}
+      API_POSTGRES_PASSWORD: ${API_POSTGRES_PASSWORD:-change-me}
+      API_POSTGRES_DB: ${API_POSTGRES_DB:-api}
+      TRACKING_POSTGRES_USER: ${TRACKING_POSTGRES_USER:-tracking}
+      TRACKING_POSTGRES_PASSWORD: ${TRACKING_POSTGRES_PASSWORD:-change-me}
+      TRACKING_POSTGRES_DB: ${TRACKING_POSTGRES_DB:-tracking}
+      KC_POSTGRES_USER: ${KC_POSTGRES_USER:-keycloak}
+      KC_POSTGRES_PASSWORD: ${KC_POSTGRES_PASSWORD:-change-me}
+      KC_POSTGRES_DB: ${KC_POSTGRES_DB:-keycloak}
     volumes:
       - ../airflow/dags:/opt/airflow/dags
       - ../airflow/plugins:/opt/airflow/plugins
