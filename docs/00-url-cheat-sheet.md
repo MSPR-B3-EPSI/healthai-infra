@@ -10,7 +10,7 @@ Default ports shown below:
 - `PROMETHEUS_PORT=9090`
 - `LOKI_PORT=3100`
 - `CLICKHOUSE_HTTP_PORT=8123`
-- `CLICKHOUSE_NATIVE_PORT=9000`
+- `CLICKHOUSE_NATIVE_PORT=9002` (default — host 9000 souvent pris par Authentik/Portainer)
 - `MINIO_API_PORT=9100`
 - `MINIO_CONSOLE_PORT=9001`
 
