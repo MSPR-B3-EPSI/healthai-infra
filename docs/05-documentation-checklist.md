@@ -34,6 +34,11 @@ Use this checklist to document what is required when changing the MSPR local inf
 - Keep document index and reading order current.
 - Link any new docs added in this folder.
 
+7. 06-container-images.md
+
+- Keep the image inventory current when a Dockerfile is added, removed, or rebased onto a new base image.
+- Keep the best-practices section current as gaps are fixed (drop the recommendation once applied).
+
 ## Change-To-Doc Mapping
 
 When you change compose files:
@@ -50,6 +55,10 @@ When you change monitoring:
 When you change scripts:
 
 - Update 01-getting-started.md and 03-operations-guide.md command examples.
+
+When you change a Dockerfile or base image:
+
+- Update 06-container-images.md inventory, per-image details, and best-practices section.
 
 When you change auth/issuer/audience behavior:
 

@@ -58,6 +58,12 @@ By default this starts profiles:
 
 ### Hot reload one or more services
 
+You can start the whole infrastructure with all the apis in watch mode just by launching the dev script
+
+```bash
+./scripts/dev.sh healthbook-api
+```
+
 When you have the service source code locally, start infra and run selected services in dev mode:
 
 ```bash
