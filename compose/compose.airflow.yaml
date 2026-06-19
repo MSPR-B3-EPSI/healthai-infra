@@ -53,6 +53,10 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_POSTGRES_USER:-airflow}:${AIRFLOW_POSTGRES_PASSWORD:-change-me}@postgres_airflow:5432/${AIRFLOW_POSTGRES_DB:-airflow}
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      # Reverse proxy : à override sur le serveur staging via `.env`.
+      # En dev local on garde http://localhost:8081 (BASE_URL inutile mais cohérent).
+      AIRFLOW__WEBSERVER__BASE_URL: ${AIRFLOW_BASE_URL:-http://localhost:8081}
+      AIRFLOW__WEBSERVER__ENABLE_PROXY_FIX: ${AIRFLOW_ENABLE_PROXY_FIX:-False}
       # Doit être identique entre webserver et scheduler — sinon le webserver
       # ne peut pas lire les logs servis par le scheduler (HTTP 403).
       AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY:-mspr-healthbook-dev-key-change-in-prod}
@@ -97,6 +101,9 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_POSTGRES_USER:-airflow}:${AIRFLOW_POSTGRES_PASSWORD:-change-me}@postgres_airflow:5432/${AIRFLOW_POSTGRES_DB:-airflow}
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      # Idem webserver — cohérence pour la génération de liens internes.
+      AIRFLOW__WEBSERVER__BASE_URL: ${AIRFLOW_BASE_URL:-http://localhost:8081}
+      AIRFLOW__WEBSERVER__ENABLE_PROXY_FIX: ${AIRFLOW_ENABLE_PROXY_FIX:-False}
       # Idem webserver — clé partagée pour permettre la lecture des logs.
       AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY:-mspr-healthbook-dev-key-change-in-prod}
       CLICKHOUSE_HOST: clickhouse

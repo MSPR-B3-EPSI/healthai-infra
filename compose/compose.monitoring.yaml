@@ -2,8 +2,14 @@ services:
   prometheus:
     image: prom/prometheus:v2.55.1
     profiles: ["monitoring"]
+    # Reverse proxy : --web.external-url et --web.route-prefix passés en flags
+    # CLI (Prometheus n'utilise pas d'env vars). Override via `.env` :
+    #   PROMETHEUS_EXTERNAL_URL=https://healthai.chomizzz.fr/prometheus
+    #   PROMETHEUS_ROUTE_PREFIX=/prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
+      - --web.external-url=${PROMETHEUS_EXTERNAL_URL:-http://localhost:9090}
+      - --web.route-prefix=${PROMETHEUS_ROUTE_PREFIX:-/}
     ports:
       - "${PROMETHEUS_PORT:-9090}:9090"
     volumes:
@@ -25,6 +31,12 @@ services:
   grafana:
     image: grafana/grafana:11.2.2
     profiles: ["monitoring"]
+    environment:
+      # Reverse proxy : override sur le serveur staging via `.env` :
+      #   GF_SERVER_ROOT_URL=https://healthai.chomizzz.fr/grafana
+      #   GF_SERVER_SERVE_FROM_SUB_PATH=true
+      GF_SERVER_ROOT_URL: ${GF_SERVER_ROOT_URL:-http://localhost:3001}
+      GF_SERVER_SERVE_FROM_SUB_PATH: ${GF_SERVER_SERVE_FROM_SUB_PATH:-false}
     ports:
       - "${GRAFANA_PORT:-3001}:3000"
     volumes:
