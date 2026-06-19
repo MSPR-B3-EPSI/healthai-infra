@@ -29,6 +29,8 @@ Available profiles: `core`, `services`, `data`, `monitoring`, `airflow`, `deep-d
 
 ### logs.sh — tail logs
 
+(note that running the monitoring service easily replace and outperform this utility script )
+
 Tail all running services:
 
 ```bash

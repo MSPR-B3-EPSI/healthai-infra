@@ -10,6 +10,7 @@ This folder contains the operational documentation for running and understanding
 4. [Operations Guide](03-operations-guide.md)
 5. [Troubleshooting](04-troubleshooting.md)
 6. [Documentation Checklist](05-documentation-checklist.md)
+7. [Container Images](06-container-images.md)
 
 ## Recommended Reading Order
 
@@ -19,6 +20,7 @@ This folder contains the operational documentation for running and understanding
 4. Use Operations Guide for day-to-day commands.
 5. Use Troubleshooting when something fails.
 6. Use Documentation Checklist before and after infra changes.
+7. Use Container Images for image content, configuration, and Dockerfile best practices.
 
 ## Scope
 

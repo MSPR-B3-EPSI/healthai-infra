@@ -1,5 +1,11 @@
 # How It Works
 
+## Schema
+
+Here is the general schema we use to visualize the infrastructure
+
+![alt text](./doc_assets/unformal_infra.png)
+
 ## High-Level Architecture
 
 The stack is organized into compose profile groups:
@@ -19,7 +25,6 @@ The stack is organized into compose profile groups:
   - postgres_tracking
   - postgres_data
   - postgres_brain
-  - minio (optional dev data lake)
 - airflow
   - postgres_airflow
   - airflow-init
@@ -30,8 +35,13 @@ The stack is organized into compose profile groups:
   - loki
   - grafana
   - promtail
+- deep-data
+  - clickhouse
+  - minio
 
 All services share one Docker network named app in each compose file.
+
+![alt text](./doc_assets/profile_services.png)
 
 ## Reverse Proxy Design
 
@@ -97,11 +107,24 @@ Two named volumes persist state across restarts:
 - brain_venv: Python virtual environment. Prevents reinstalling PyTorch on every container start.
 - brain_hf_cache: HuggingFace model weights. Prevents re-downloading models on every start.
 
-Optional storage:
+## Deep Data / Warehouse Model
 
-- MinIO can be used as local object storage (data lake style) in dev.
+The deep-data profile is an optional analytics warehouse, separate from the per-service
+Postgres databases used for transactional data:
+
+- clickhouse: columnar warehouse. Seeded on first start from
+  deep-data/clickhouse/init/\*.sql with databases for exercise_db, daily_food,
+  diet_recommendation, and workout_session, plus raw landing tables.
+- minio: S3-compatible object storage used as a data lake for raw datasets
+  before they are loaded into ClickHouse.
+
+Airflow DAGs (dump_api_to_lake, load_warehouse, load_lake_to_recommendation) move data
+from the service APIs into MinIO and then into ClickHouse, and read ClickHouse data back
+out for model training.
 
 ## Monitoring Model
+
+(see the dedicated pdf about the monitoring, ps: c'est un autre livrable )
 
 Prometheus:
 
