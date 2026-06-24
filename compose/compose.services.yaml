@@ -17,6 +17,15 @@ services:
       KEYCLOAK_JWKS_URI: ${KEYCLOAK_ISSUER_INTERNAL:-http://keycloak:8080/auth/realms/healthai}/protocol/openid-connect/certs
       KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE_API:-healthbook-api}
       DATABASE_URL: ${API_DATABASE_URL:-postgresql://api:change-me@postgres_api:5432/api}
+      # MinIO — media upload pour les posts.
+      # PUBLIC_ENDPOINT = ingress nginx (les URLs présignées sont servies via
+      # le reverse proxy, pas via le port MinIO direct). La signature SigV4
+      # couvre cet host, donc il doit correspondre à ce que le client appelle.
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-http://minio:9000}
+      MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT_API:-http://localhost:8080}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-change-me}
+      MINIO_BUCKET: ${HEALTHBOOK_MINIO_BUCKET:-healthbook}
     volumes:
       - ${MSPR_API_SOURCE_DIR:-../../healthbook-api}:/workspace
       - ${MSPR_API_SOURCE_DIR:-../../healthbook-api}/node_modules:/workspace/node_modules
