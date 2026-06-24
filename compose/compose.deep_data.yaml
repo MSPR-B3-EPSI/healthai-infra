@@ -34,10 +34,10 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-change-me}
-      # Reverse proxy : la console MinIO doit savoir son URL publique pour
-      # générer les bons redirects + les liens vers les assets statiques.
-      # Override sur le serveur staging via `.env` :
-      #   MINIO_BROWSER_REDIRECT_URL=https://healthai.chomizzz.fr/minio
+      # Reverse proxy via cloudflared (sous-domaine dédié). La console MinIO doit
+      # connaître son URL publique pour générer redirects + liens d'assets.
+      # Sur le Pi `.env` :
+      #   MINIO_BROWSER_REDIRECT_URL=https://minio.healthai.chomizzz.fr
       MINIO_BROWSER_REDIRECT_URL: ${MINIO_BROWSER_REDIRECT_URL:-http://localhost:9001}
     volumes:
       - minio_data:/data

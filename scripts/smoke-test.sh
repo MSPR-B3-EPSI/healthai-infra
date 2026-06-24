@@ -5,8 +5,9 @@
 # n'importe quel dev qui veut valider sa stack locale).
 #
 # Usage :
-#   ./scripts/smoke-test.sh             # test tous les endpoints
+#   ./scripts/smoke-test.sh             # test tous les endpoints en local (host:port)
 #   ./scripts/smoke-test.sh --quiet     # n'affiche que les échecs
+#   ./scripts/smoke-test.sh --external  # test les sous-domaines publics (via tunnel CF)
 #
 # Exit code :
 #   0   tous les endpoints répondent
@@ -25,7 +26,16 @@ set -uo pipefail
 MAX_RETRIES="${MAX_RETRIES:-12}"      # 12 × 10s = 2 min max par endpoint
 RETRY_DELAY="${RETRY_DELAY:-10}"
 TIMEOUT="${TIMEOUT:-5}"
-QUIET="${1:-}"
+
+# Parse flags — --quiet et --external peuvent être combinés
+QUIET=""
+EXTERNAL=""
+for arg in "$@"; do
+  case "$arg" in
+    --quiet) QUIET="--quiet" ;;
+    --external) EXTERNAL="1" ;;
+  esac
+done
 
 # ─── Ports configurables (depuis .env, sinon defaults dev local) ─────────────
 # Si tu lances depuis Jenkins, source le .env avant : `set -a; . ./.env; set +a`
@@ -56,16 +66,29 @@ fi
 # - expected_status : code HTTP attendu (default 200)
 # - grep_pattern : si présent, le body doit matcher (regex grep)
 
-ENDPOINTS=(
-  "Gateway Nginx (brain/docs)|http://${HOST}:${GATEWAY_PORT}/brain/docs|200|"
-  "Keycloak (realm healthai)|http://${HOST}:${GATEWAY_PORT}/auth/realms/healthai/.well-known/openid-configuration|200|issuer"
-  "Airflow webserver|http://${HOST}:${AIRFLOW_PORT}/health|200|healthy"
-  "ClickHouse HTTP|http://${HOST}:${CLICKHOUSE_HTTP_PORT}/ping|200|Ok"
-  "MinIO API health|http://${HOST}:${MINIO_API_PORT}/minio/health/live|200|"
-  "MinIO Console|http://${HOST}:${MINIO_CONSOLE_PORT}/|200|"
-  "Prometheus|http://${HOST}:${PROMETHEUS_PORT}/-/healthy|200|Healthy"
-  "Grafana|http://${HOST}:${GRAFANA_PORT}/api/health|200|database"
-)
+if [[ -n "$EXTERNAL" ]]; then
+  # Test via les sous-domaines publics (cloudflared + DNS CF doivent être Up).
+  # ClickHouse n'est pas exposé externe ; le test passe par MinIO console et l'API gateway.
+  ENDPOINTS=(
+    "Gateway (root)|https://healthai.chomizzz.fr/brain/docs|200|"
+    "Keycloak (via /auth)|https://healthai.chomizzz.fr/auth/realms/healthai/.well-known/openid-configuration|200|issuer"
+    "Airflow|https://airflow.healthai.chomizzz.fr/health|200|healthy"
+    "MinIO Console|https://minio.healthai.chomizzz.fr/|200|"
+    "Prometheus|https://prometheus.healthai.chomizzz.fr/-/healthy|200|Healthy"
+    "Grafana|https://grafana.healthai.chomizzz.fr/api/health|200|database"
+  )
+else
+  ENDPOINTS=(
+    "Gateway Nginx (brain/docs)|http://${HOST}:${GATEWAY_PORT}/brain/docs|200|"
+    "Keycloak (realm healthai)|http://${HOST}:${GATEWAY_PORT}/auth/realms/healthai/.well-known/openid-configuration|200|issuer"
+    "Airflow webserver|http://${HOST}:${AIRFLOW_PORT}/health|200|healthy"
+    "ClickHouse HTTP|http://${HOST}:${CLICKHOUSE_HTTP_PORT}/ping|200|Ok"
+    "MinIO API health|http://${HOST}:${MINIO_API_PORT}/minio/health/live|200|"
+    "MinIO Console|http://${HOST}:${MINIO_CONSOLE_PORT}/|200|"
+    "Prometheus|http://${HOST}:${PROMETHEUS_PORT}/-/healthy|200|Healthy"
+    "Grafana|http://${HOST}:${GRAFANA_PORT}/api/health|200|database"
+  )
+fi
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -134,7 +157,7 @@ check_endpoint() {
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
 log "${BOLD}${BLUE}════════════════════════════════════════════════════════${RESET}"
-log "${BOLD}${BLUE}  HealthAI smoke test${RESET}"
+log "${BOLD}${BLUE}  HealthAI smoke test ${EXTERNAL:+(external — via cloudflared)}${RESET}"
 log "${BOLD}${BLUE}  $(date -Iseconds)${RESET}"
 log "${BOLD}${BLUE}════════════════════════════════════════════════════════${RESET}"
 log

@@ -3,7 +3,8 @@ services:
     image: nginx:1.27-alpine
     profiles: ["core"]
     ports:
-      - "${GATEWAY_PORT:-8080}:80"
+      # Défaut 8090 (et pas 8080) pour éviter le conflit avec Jenkins sur le Pi staging.
+      - "${GATEWAY_PORT:-8090}:80"
     volumes:
       - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ../nginx/conf.d:/etc/nginx/conf.d:ro
@@ -61,6 +62,9 @@ services:
 
 networks:
   app:
+    # Nom épinglé pour permettre à d'autres composes (typiquement
+    # healthai-jenkins/cloudflared/) de le référencer en `external: true`.
+    name: healthai_app
 
 volumes:
   pgdata_keycloak:

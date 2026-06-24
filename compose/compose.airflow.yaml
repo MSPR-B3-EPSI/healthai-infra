@@ -53,8 +53,9 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_POSTGRES_USER:-airflow}:${AIRFLOW_POSTGRES_PASSWORD:-change-me}@postgres_airflow:5432/${AIRFLOW_POSTGRES_DB:-airflow}
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-      # Reverse proxy : à override sur le serveur staging via `.env`.
-      # En dev local on garde http://localhost:8081 (BASE_URL inutile mais cohérent).
+      # Reverse proxy via cloudflared (sous-domaine dédié). Override sur le Pi via `.env` :
+      #   AIRFLOW_BASE_URL=https://airflow.healthai.chomizzz.fr
+      #   AIRFLOW_ENABLE_PROXY_FIX=True
       AIRFLOW__WEBSERVER__BASE_URL: ${AIRFLOW_BASE_URL:-http://localhost:8081}
       AIRFLOW__WEBSERVER__ENABLE_PROXY_FIX: ${AIRFLOW_ENABLE_PROXY_FIX:-False}
       # Doit être identique entre webserver et scheduler — sinon le webserver
