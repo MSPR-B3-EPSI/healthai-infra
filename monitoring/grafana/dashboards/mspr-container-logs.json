@@ -4,10 +4,297 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "id": null,
-  "links": [],
+  "links": [
+    {
+      "title": "Overview",
+      "type": "link",
+      "url": "/d/mspr-overview",
+      "tooltip": "Back to MSPR Overview"
+    }
+  ],
   "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "title": "📊 Activity — $service",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "id": 10,
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "horizontal",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({compose_service=~\"$service\"} |~ \"(?i)(error|exception|fatal|panic)\" [$__range]))",
+          "legendFormat": "Errors",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Errors (time range)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "orange",
+                "value": 10
+              }
+            ]
+          },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "id": 11,
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "horizontal",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({compose_service=~\"$service\"} |~ \"(?i)(warn|warning)\" [$__range]))",
+          "legendFormat": "Warnings",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Warnings (time range)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "id": 12,
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "horizontal",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({compose_service=~\"$service\"} [$__range]))",
+          "legendFormat": "Total Lines",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Log Lines (time range)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "id": 13,
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "horizontal",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({compose_service=~\"$service\"} |~ \"(?i)(fatal|panic)\" [$__range]))",
+          "legendFormat": "Fatals",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Fatals / Panics (time range)",
+      "type": "stat"
+    },
     {
       "datasource": {
         "type": "loki",
@@ -18,32 +305,34 @@
           "color": {
             "mode": "palette-classic"
           },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10
+          },
+          "unit": "short"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 8,
-        "w": 24,
+        "w": 12,
         "x": 0,
-        "y": 0
+        "y": 4
       },
-      "id": 1,
+      "id": 20,
       "options": {
         "legend": {
-          "calcs": [],
+          "calcs": [
+            "max",
+            "mean"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -53,13 +342,13 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "sum by (compose_service) (rate({compose_service=~\".+\",compose_service!~\"loki|promtail|grafana|prometheus\"}[5m]))",
+          "expr": "sum by (compose_service) (rate({compose_service=~\"$service\"} [5m]))",
           "legendFormat": "{{compose_service}}",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "Container Log Rate (lines/s, 5m)",
+      "title": "Log Rate (lines/s, 5m)",
       "type": "timeseries"
     },
     {
@@ -72,7 +361,10 @@
           "color": {
             "mode": "palette-classic"
           },
-          "mappings": [],
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -89,23 +381,31 @@
                 "value": 5
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 8
+        "w": 12,
+        "x": 12,
+        "y": 4
       },
-      "id": 2,
+      "id": 21,
       "options": {
         "legend": {
-          "calcs": [],
+          "calcs": [
+            "max",
+            "sum"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -115,14 +415,75 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "sum by (compose_service) (count_over_time({compose_service=~\".+\",compose_service!~\"loki|promtail|grafana|prometheus\"} |~ \"(?i)(error|exception|fatal|panic)\" [5m]))",
+          "expr": "sum by (compose_service) (count_over_time({compose_service=~\"$service\"} |~ \"(?i)(error|exception|fatal|panic)\" [5m]))",
           "legendFormat": "{{compose_service}}",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "Errors And Fatals (5m)",
+      "title": "Error Rate by Service (5m)",
       "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "id": 101,
+      "title": "🔴 Errors Only — $service",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 30,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "{compose_service=~\"$service\"} |~ \"(?i)(error|exception|fatal|panic)\"",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Error & Fatal Logs — $service",
+      "type": "logs"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "id": 102,
+      "title": "📋 All Logs — $service",
+      "type": "row"
     },
     {
       "datasource": {
@@ -133,9 +494,9 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 24
       },
-      "id": 3,
+      "id": 40,
       "maxPerRow": 1,
       "options": {
         "dedupStrategy": "none",
@@ -154,14 +515,14 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "{compose_service=~\".+\",compose_service!~\"loki|promtail|grafana|prometheus\",container=~\"$container\"}",
+          "expr": "{compose_service=~\"$service\",container=~\"$container\"}",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "repeat": "container",
+      "repeat": "service",
       "repeatDirection": "v",
-      "title": "Logs - $container",
+      "title": "Logs — $service",
       "type": "logs"
     }
   ],
@@ -185,14 +546,38 @@
           "type": "loki",
           "uid": "loki"
         },
-        "definition": "label_values({compose_service=~\".+\",compose_service!~\"loki|promtail|grafana|prometheus\"}, container)",
+        "definition": "label_values({compose_service=~\".+\",compose_service!~\"loki|promtail|grafana|prometheus\"}, compose_service)",
         "hide": 0,
         "includeAll": true,
+        "allValue": ".+",
+        "label": "Service",
+        "multi": true,
+        "name": "service",
+        "options": [],
+        "query": "label_values({compose_service=~\".+\",compose_service!~\"loki|promtail|grafana|prometheus\"}, compose_service)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "loki",
+          "uid": "loki"
+        },
+        "definition": "label_values({compose_service=~\"$service\"}, container)",
+        "hide": 0,
+        "includeAll": true,
+        "allValue": ".+",
         "label": "Container",
         "multi": true,
         "name": "container",
         "options": [],
-        "query": "label_values({compose_service=~\".+\",compose_service!~\"loki|promtail|grafana|prometheus\"}, container)",
+        "query": "label_values({compose_service=~\"$service\"}, container)",
         "refresh": 2,
         "sort": 1,
         "type": "query"
@@ -200,13 +585,13 @@
     ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "MSPR Container Logs",
   "uid": "mspr-container-logs",
-  "version": 3,
+  "version": 4,
   "weekStart": ""
 }

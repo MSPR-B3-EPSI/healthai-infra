@@ -17,7 +17,7 @@ scrape_configs:
       - source_labels:
           [__meta_docker_container_label_com_docker_compose_service]
         # Keep app and infra workloads; exclude monitoring self-logs to avoid recursive log amplification.
-        regex: "nginx|keycloak|postgres_keycloak|healthbook-api|tracking-api|data-recommendation-api|postgres_api|postgres_tracking|postgres_data|minio|postgres_airflow|airflow-init|airflow-webserver|airflow-scheduler"
+        regex: "nginx|keycloak|postgres_keycloak|healthbook-api|tracking-api|data-recommendation-api|postgres_api|postgres_tracking|postgres_data|minio|postgres_airflow|airflow-init|airflow-webserver|airflow-scheduler|healthai-brain-nest-api|healthai-brain-fastapi-api|postgres_brain"
         action: keep
       - source_labels:
           [__meta_docker_container_label_com_docker_compose_project]
